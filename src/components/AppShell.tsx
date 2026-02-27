@@ -13,14 +13,15 @@ import {
   X,
   ChevronRight,
   LogOut,
-  Sparkles
+  Sparkles,
+  Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface AppShellProps {
   children: React.ReactNode;
-  currentView: 'dashboard' | 'resume' | 'interview' | 'learning' | 'portfolio';
-  setView: (view: 'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'portfolio') => void;
+  currentView: 'dashboard' | 'resume' | 'interview' | 'learning' | 'portfolio' | 'community';
+  setView: (view: 'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'portfolio' | 'community') => void;
 }
 
 const NavItem = ({ 
@@ -99,7 +100,16 @@ export default function AppShell({ children, currentView, setView }: AppShellPro
                   isActive={currentView === 'dashboard'} 
                   onClick={() => { setView('dashboard'); setIsSidebarOpen(false); }}
                 />
-                <NavItem icon={Briefcase} label="Job Matches" />
+                <NavItem 
+                  icon={Briefcase} 
+                  label="Job Matches" 
+                />
+                <NavItem 
+                  icon={Users} 
+                  label="Community" 
+                  isActive={currentView === 'community'} 
+                  onClick={() => { setView('community'); setIsSidebarOpen(false); }}
+                />
                 <NavItem 
                   icon={BookOpen} 
                   label="Curriculum" 
