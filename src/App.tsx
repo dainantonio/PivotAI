@@ -28,10 +28,11 @@ import MockInterview from './pages/MockInterview';
 import LearningHub from './pages/LearningHub';
 import PortfolioBuilder from './pages/PortfolioBuilder';
 import CommunityNetwork from './pages/CommunityNetwork';
+import Settings from './pages/Settings';
 import Auth from './pages/Auth';
 
 export default function App() {
-  const [view, setView] = useState<'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'portfolio' | 'community'>('landing');
+  const [view, setView] = useState<'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'portfolio' | 'community' | 'settings'>('landing');
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -52,7 +53,7 @@ export default function App() {
     );
   }
 
-  if (view === 'dashboard' || view === 'resume' || view === 'interview' || view === 'learning' || view === 'portfolio' || view === 'community') {
+  if (view === 'dashboard' || view === 'resume' || view === 'interview' || view === 'learning' || view === 'portfolio' || view === 'community' || view === 'settings') {
     return (
       <AppShell currentView={view} setView={setView}>
         {view === 'dashboard' && <Dashboard />}
@@ -61,6 +62,7 @@ export default function App() {
         {view === 'learning' && <LearningHub />}
         {view === 'portfolio' && <PortfolioBuilder />}
         {view === 'community' && <CommunityNetwork />}
+        {view === 'settings' && <Settings />}
       </AppShell>
     );
   }

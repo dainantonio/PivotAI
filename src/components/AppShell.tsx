@@ -14,14 +14,15 @@ import {
   ChevronRight,
   LogOut,
   Sparkles,
-  Users
+  Users,
+  Settings as SettingsIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface AppShellProps {
   children: React.ReactNode;
-  currentView: 'dashboard' | 'resume' | 'interview' | 'learning' | 'portfolio' | 'community';
-  setView: (view: 'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'portfolio' | 'community') => void;
+  currentView: 'dashboard' | 'resume' | 'interview' | 'learning' | 'portfolio' | 'community' | 'settings';
+  setView: (view: 'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'portfolio' | 'community' | 'settings') => void;
 }
 
 const NavItem = ({ 
@@ -121,6 +122,12 @@ export default function AppShell({ children, currentView, setView }: AppShellPro
                   label="Portfolio" 
                   isActive={currentView === 'portfolio'} 
                   onClick={() => { setView('portfolio'); setIsSidebarOpen(false); }}
+                />
+                <NavItem 
+                  icon={SettingsIcon} 
+                  label="Settings" 
+                  isActive={currentView === 'settings'} 
+                  onClick={() => { setView('settings'); setIsSidebarOpen(false); }}
                 />
               </nav>
             </div>
