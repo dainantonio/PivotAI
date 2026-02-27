@@ -25,9 +25,12 @@ import AppShell from './components/AppShell';
 import Dashboard from './pages/Dashboard';
 import ResumeOptimizer from './pages/ResumeOptimizer';
 import MockInterview from './pages/MockInterview';
+import LearningHub from './pages/LearningHub';
+import PortfolioBuilder from './pages/PortfolioBuilder';
+import Auth from './pages/Auth';
 
 export default function App() {
-  const [view, setView] = useState<'landing' | 'dashboard' | 'resume' | 'interview'>('landing');
+  const [view, setView] = useState<'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'portfolio'>('landing');
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -39,12 +42,23 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  if (view === 'dashboard' || view === 'resume' || view === 'interview') {
+  if (view === 'auth') {
+    return (
+      <Auth 
+        onLogin={() => setView('dashboard')} 
+        onBack={() => setView('landing')} 
+      />
+    );
+  }
+
+  if (view === 'dashboard' || view === 'resume' || view === 'interview' || view === 'learning' || view === 'portfolio') {
     return (
       <AppShell currentView={view} setView={setView}>
         {view === 'dashboard' && <Dashboard />}
         {view === 'resume' && <ResumeOptimizer />}
         {view === 'interview' && <MockInterview />}
+        {view === 'learning' && <LearningHub />}
+        {view === 'portfolio' && <PortfolioBuilder />}
       </AppShell>
     );
   }
@@ -78,13 +92,13 @@ export default function App() {
 
             <div className="hidden md:flex items-center gap-4">
               <button 
-                onClick={() => setView('dashboard')}
+                onClick={() => setView('auth')}
                 className="text-sm font-semibold text-slate-700 hover:text-indigo-600 transition-colors"
               >
                 Log in
               </button>
               <button 
-                onClick={() => setView('dashboard')}
+                onClick={() => setView('auth')}
                 className="bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 active:scale-95"
               >
                 Get Started
@@ -117,13 +131,13 @@ export default function App() {
                 <a href="#" className="block text-base font-medium text-slate-900">Pricing</a>
                 <div className="pt-4 flex flex-col gap-3">
                   <button 
-                    onClick={() => { setView('dashboard'); setIsMobileMenuOpen(false); }}
+                    onClick={() => { setView('auth'); setIsMobileMenuOpen(false); }}
                     className="w-full text-center py-3 text-base font-semibold text-slate-700 border border-slate-200 rounded-xl"
                   >
                     Log in
                   </button>
                   <button 
-                    onClick={() => { setView('dashboard'); setIsMobileMenuOpen(false); }}
+                    onClick={() => { setView('auth'); setIsMobileMenuOpen(false); }}
                     className="w-full text-center py-3 text-base font-semibold text-white bg-indigo-600 rounded-xl"
                   >
                     Get Started
@@ -187,7 +201,7 @@ export default function App() {
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20"
           >
             <button 
-              onClick={() => setView('dashboard')}
+              onClick={() => setView('auth')}
               className="w-full sm:w-auto bg-slate-900 text-white px-8 py-4 rounded-full text-lg font-bold hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 hover:-translate-y-1 active:scale-95"
             >
               Start Assessment
@@ -442,7 +456,7 @@ export default function App() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button 
-              onClick={() => setView('dashboard')}
+              onClick={() => setView('auth')}
               className="w-full sm:w-auto bg-indigo-600 text-white px-10 py-5 rounded-full text-xl font-bold hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 hover:-translate-y-1 active:scale-95"
             >
               Start your assessment today
