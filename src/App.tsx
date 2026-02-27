@@ -23,9 +23,11 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import AppShell from './components/AppShell';
 import Dashboard from './pages/Dashboard';
+import ResumeOptimizer from './pages/ResumeOptimizer';
+import MockInterview from './pages/MockInterview';
 
 export default function App() {
-  const [view, setView] = useState<'landing' | 'dashboard'>('landing');
+  const [view, setView] = useState<'landing' | 'dashboard' | 'resume' | 'interview'>('landing');
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -37,10 +39,12 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  if (view === 'dashboard') {
+  if (view === 'dashboard' || view === 'resume' || view === 'interview') {
     return (
-      <AppShell>
-        <Dashboard />
+      <AppShell currentView={view} setView={setView}>
+        {view === 'dashboard' && <Dashboard />}
+        {view === 'resume' && <ResumeOptimizer />}
+        {view === 'interview' && <MockInterview />}
       </AppShell>
     );
   }

@@ -19,6 +19,8 @@ import { motion, AnimatePresence } from 'motion/react';
 
 interface AppShellProps {
   children: React.ReactNode;
+  currentView: 'dashboard' | 'resume' | 'interview';
+  setView: (view: 'landing' | 'dashboard' | 'resume' | 'interview') => void;
 }
 
 const NavItem = ({ 
@@ -51,7 +53,7 @@ const NavItem = ({
   </button>
 );
 
-export default function AppShell({ children }: AppShellProps) {
+export default function AppShell({ children, currentView, setView }: AppShellProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
@@ -76,7 +78,10 @@ export default function AppShell({ children }: AppShellProps) {
       `}>
         <div className="h-full flex flex-col p-6">
           {/* Logo */}
-          <div className="flex items-center gap-3 mb-10 px-2">
+          <div 
+            onClick={() => setView('landing')}
+            className="flex items-center gap-3 mb-10 px-2 cursor-pointer"
+          >
             <div className="bg-blue-600 p-1.5 rounded-lg">
               <BrainCircuit className="w-6 h-6 text-white" />
             </div>
@@ -88,7 +93,12 @@ export default function AppShell({ children }: AppShellProps) {
             <div>
               <p className="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Main Menu</p>
               <nav className="space-y-1">
-                <NavItem icon={LayoutDashboard} label="Overview" isActive />
+                <NavItem 
+                  icon={LayoutDashboard} 
+                  label="Overview" 
+                  isActive={currentView === 'dashboard'} 
+                  onClick={() => { setView('dashboard'); setIsSidebarOpen(false); }}
+                />
                 <NavItem icon={Briefcase} label="Job Matches" />
                 <NavItem icon={BookOpen} label="Curriculum" />
                 <NavItem icon={User} label="Profile" />
@@ -98,15 +108,28 @@ export default function AppShell({ children }: AppShellProps) {
             <div>
               <p className="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Tools</p>
               <nav className="space-y-1">
-                <NavItem icon={FileText} label="Resume Optimizer" />
-                <NavItem icon={Mic2} label="Mock Interview" />
+                <NavItem 
+                  icon={FileText} 
+                  label="Resume Optimizer" 
+                  isActive={currentView === 'resume'} 
+                  onClick={() => { setView('resume'); setIsSidebarOpen(false); }}
+                />
+                <NavItem 
+                  icon={Mic2} 
+                  label="Mock Interview" 
+                  isActive={currentView === 'interview'} 
+                  onClick={() => { setView('interview'); setIsSidebarOpen(false); }}
+                />
               </nav>
             </div>
           </div>
 
           {/* User Profile Card */}
           <div className="mt-auto pt-6 border-t border-slate-800">
-            <div className="bg-slate-800/50 p-4 rounded-2xl flex items-center gap-3 group cursor-pointer hover:bg-slate-800 transition-colors">
+            <div 
+              onClick={() => setView('landing')}
+              className="bg-slate-800/50 p-4 rounded-2xl flex items-center gap-3 group cursor-pointer hover:bg-slate-800 transition-colors"
+            >
               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold">
                 AM
               </div>
