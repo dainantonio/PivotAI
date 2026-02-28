@@ -12,13 +12,23 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { generatePath, CareerPath } from '../services/geminiService';
 
 type EngineState = 'idle' | 'loading' | 'results';
 
-export default function Dashboard() {
-  const [state, setState] = useState<EngineState>('idle');
+interface DashboardProps {
+  careerData: CareerPath | null;
+  setCareerData: (data: CareerPath | null) => void;
+  setView: (view: 'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings') => void;
+}
+
+export default function Dashboard({ careerData, setCareerData, setView }: DashboardProps) {
+  const [state, setState] = useState<EngineState>(careerData ? 'results' : 'idle');
   const [loadingText, setLoadingText] = useState('');
   const [progress, setProgress] = useState(0);
+  const [currentRole, setCurrentRole] = useState('');
+  const [industry, setIndustry] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const loadingSteps = [
     "Cross-referencing 50k+ job descriptions...",
@@ -28,9 +38,25 @@ export default function Dashboard() {
     "Finalizing pivot recommendations..."
   ];
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
+    if (!currentRole.trim() || !industry.trim()) return;
+    
     setState('loading');
     setProgress(0);
+    setError(null);
+
+    try {
+      // Start the API call in parallel with the loading animation
+      const dataPromise = generatePath(currentRole, industry);
+      
+      // We'll let the animation run for a bit even if the API is fast for "thematic" effect
+      const data = await dataPromise;
+      setCareerData(data);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to generate career path. Please check your API key and try again.");
+      setState('idle');
+    }
   };
 
   useEffect(() => {
@@ -109,6 +135,8 @@ export default function Dashboard() {
                   <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-4 mb-2 block">Current Role Title</label>
                   <input 
                     type="text" 
+                    value={currentRole}
+                    onChange={(e) => setCurrentRole(e.target.value)}
                     placeholder="e.g. Marketing Copywriter"
                     className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                   />
@@ -117,15 +145,22 @@ export default function Dashboard() {
                   <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-4 mb-2 block">Industry</label>
                   <input 
                     type="text" 
+                    value={industry}
+                    onChange={(e) => setIndustry(e.target.value)}
                     placeholder="e.g. Advertising & Media"
                     className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                   />
                 </div>
               </div>
 
+              {error && (
+                <p className="text-red-500 text-xs font-bold mb-4">{error}</p>
+              )}
+
               <button 
                 onClick={handleAnalyze}
-                className="w-full bg-blue-600 text-white py-5 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-[0.98]"
+                disabled={!currentRole.trim() || !industry.trim()}
+                className="w-full bg-blue-600 text-white py-5 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-[0.98] disabled:opacity-50 disabled:shadow-none"
               >
                 Analyze Career Risk
               </button>
@@ -191,9 +226,9 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <p className="text-slate-500 text-sm font-bold uppercase tracking-widest mb-4">Displacement Risk</p>
-                <h3 className="text-7xl font-black text-slate-900 mb-4">78%</h3>
+                <h3 className="text-7xl font-black text-slate-900 mb-4">{careerData?.displacementRisk}%</h3>
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  Your core tasks in <span className="font-bold text-slate-900">Content Generation</span> and <span className="font-bold text-slate-900">Research</span> are highly susceptible to LLM automation within the next 18 months.
+                  Your core tasks in <span className="font-bold text-slate-900">{currentRole}</span> within the <span className="font-bold text-slate-900">{industry}</span> sector are susceptible to automation.
                 </p>
               </motion.div>
 
@@ -201,11 +236,11 @@ export default function Dashboard() {
               <motion.div variants={itemVariants} className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
                 <p className="text-slate-500 text-sm font-bold uppercase tracking-widest mb-4">Transferable Assets</p>
                 <div className="flex items-baseline gap-2 mb-6">
-                  <h3 className="text-7xl font-black text-slate-900">4</h3>
+                  <h3 className="text-7xl font-black text-slate-900">{careerData?.transferableSkills.length}</h3>
                   <span className="text-slate-400 font-bold">Core Pillars</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {['Domain Knowledge', 'Project Mgmt', 'Stakeholder Comms', 'Strategic Planning'].map(tag => (
+                  {careerData?.transferableSkills.map(tag => (
                     <span key={tag} className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-xl text-xs font-bold border border-blue-100">
                       {tag}
                     </span>
@@ -234,33 +269,35 @@ export default function Dashboard() {
                 <div className="absolute top-0 right-0 p-8">
                   <div className="bg-blue-500 text-white px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-blue-500/20">
                     <Sparkles className="w-3.5 h-3.5" />
-                    92% Match
+                    {careerData?.matchPercentage}% Match
                   </div>
                 </div>
                 
                 <div className="relative z-10">
                   <p className="text-blue-400 text-xs font-black uppercase tracking-[0.2em] mb-4">Recommended Pivot</p>
-                  <h3 className="text-4xl font-black mb-8">AI Prompt Engineer</h3>
+                  <h3 className="text-4xl font-black mb-8">{careerData?.recommendedPivot}</h3>
                   
                   <div className="space-y-4 mb-10">
-                    <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">Technical Gap Skills</p>
+                    <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">Learning Syllabus</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {[
-                        'Context Window Optimization',
-                        'Few-Shot Prompting Patterns',
-                        'LLM Evaluation Frameworks'
-                      ].map(skill => (
-                        <div key={skill} className="flex items-center gap-3">
-                          <div className="bg-emerald-500/20 p-1 rounded-full">
+                      {careerData?.syllabus.map(module => (
+                        <div key={module.moduleTitle} className="flex items-start gap-3">
+                          <div className="bg-emerald-500/20 p-1 rounded-full mt-0.5">
                             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                           </div>
-                          <span className="text-sm text-slate-300">{skill}</span>
+                          <div>
+                            <p className="text-sm font-bold text-white">{module.moduleTitle}</p>
+                            <p className="text-[10px] text-slate-400">{module.skillsToLearn.join(', ')}</p>
+                          </div>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  <button className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 hover:bg-blue-500 transition-all group/btn">
+                  <button 
+                    onClick={() => setView('curriculum')}
+                    className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 hover:bg-blue-500 transition-all group/btn"
+                  >
                     Start Learning Path
                     <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
                   </button>

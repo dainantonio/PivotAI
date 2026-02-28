@@ -21,8 +21,8 @@ import { motion, AnimatePresence } from 'motion/react';
 
 interface AppShellProps {
   children: React.ReactNode;
-  currentView: 'dashboard' | 'resume' | 'interview' | 'learning' | 'portfolio' | 'community' | 'settings';
-  setView: (view: 'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'portfolio' | 'community' | 'settings') => void;
+  currentView: 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings';
+  setView: (view: 'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings') => void;
 }
 
 const NavItem = ({ 
@@ -114,8 +114,8 @@ export default function AppShell({ children, currentView, setView }: AppShellPro
                 <NavItem 
                   icon={BookOpen} 
                   label="Curriculum" 
-                  isActive={currentView === 'learning'} 
-                  onClick={() => { setView('learning'); setIsSidebarOpen(false); }}
+                  isActive={currentView === 'curriculum'} 
+                  onClick={() => { setView('curriculum'); setIsSidebarOpen(false); }}
                 />
                 <NavItem 
                   icon={User} 
@@ -143,7 +143,7 @@ export default function AppShell({ children, currentView, setView }: AppShellPro
                 />
                 <NavItem 
                   icon={Mic2} 
-                  label="Mock Interview" 
+                  label="Interview Simulator" 
                   isActive={currentView === 'interview'} 
                   onClick={() => { setView('interview'); setIsSidebarOpen(false); }}
                 />

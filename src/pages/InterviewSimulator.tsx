@@ -13,6 +13,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { interview, CareerPath } from '../services/geminiService';
 
 interface Message {
   id: string;
@@ -21,16 +22,22 @@ interface Message {
   feedback?: string;
 }
 
-export default function InterviewSimulator() {
+interface InterviewSimulatorProps {
+  careerData: CareerPath | null;
+}
+
+export default function InterviewSimulator({ careerData }: InterviewSimulatorProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       role: 'ai',
-      content: "Hello Alex! I'm Coach Atlas. Today we're conducting a technical interview for the AI Prompt Engineer position. To start, can you explain how you would optimize a prompt to reduce hallucinations in a RAG-based system?"
+      content: `Hello Alex! I'm Coach Atlas. Today we're conducting a technical interview for the ${careerData?.recommendedPivot || 'AI Prompt Engineer'} position. To start, can you explain how you would optimize a prompt to reduce hallucinations in a RAG-based system?`
     }
   ]);
   const [input, setInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
+  const [targetRole, setTargetRole] = useState(careerData?.recommendedPivot || 'AI Prompt Engineer');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,28 +46,52 @@ export default function InterviewSimulator() {
     }
   }, [messages]);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim() || isThinking) return;
 
+    const currentAnswer = input;
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: input,
-      feedback: "Feedback: Great use of the STAR method, but you missed mentioning evaluation metrics."
+      content: currentAnswer,
     };
 
     setMessages(prev => [...prev, userMessage]);
     setInput('');
+    setIsThinking(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      // Prepare history for Gemini
+      const history = messages.map(m => ({
+        role: m.role === 'ai' ? 'model' : 'user',
+        content: m.content
+      }));
+
+      const response = await interview(history, currentAnswer, targetRole);
+      
+      // Update the user's message with feedback
+      setMessages(prev => prev.map(m => 
+        m.id === userMessage.id ? { ...m, feedback: response.feedback } : m
+      ));
+
+      // Add AI's next question
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         role: 'ai',
-        content: "That's a solid approach. Following up on that, how do you handle context window limitations when dealing with extremely large document sets?"
+        content: response.nextQuestion
       };
       setMessages(prev => [...prev, aiResponse]);
-    }, 1500);
+    } catch (err) {
+      console.error(err);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'ai',
+        content: "I'm sorry, I encountered an error processing your answer. Please try again."
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsThinking(false);
+    }
   };
 
   return (
@@ -97,7 +128,12 @@ export default function InterviewSimulator() {
                   </div>
                   <div>
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Target Role</p>
-                    <p className="text-sm font-bold text-white">AI Prompt Engineer</p>
+                    <input 
+                      type="text"
+                      value={targetRole}
+                      onChange={(e) => setTargetRole(e.target.value)}
+                      className="text-sm font-bold text-white bg-transparent border-b border-white/10 focus:outline-none focus:border-blue-500 w-full"
+                    />
                   </div>
                 </div>
                 <div className="bg-white/5 border border-white/10 p-4 rounded-2xl flex items-center gap-4 group hover:bg-white/10 transition-colors">
@@ -198,6 +234,22 @@ export default function InterviewSimulator() {
                 </div>
               </motion.div>
             ))}
+            {isThinking && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex justify-start"
+              >
+                <div className="bg-white border border-slate-200 p-4 rounded-2xl flex items-center gap-2">
+                  <div className="flex gap-1">
+                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" />
+                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce [animation-delay:0.2s]" />
+                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce [animation-delay:0.4s]" />
+                  </div>
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Atlas is thinking...</span>
+                </div>
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
 

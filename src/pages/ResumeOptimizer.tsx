@@ -12,25 +12,37 @@ import {
   Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { optimizeResume, OptimizedResume, CareerPath } from '../services/geminiService';
 
-export default function ResumeOptimizer() {
+interface ResumeOptimizerProps {
+  careerData: CareerPath | null;
+}
+
+export default function ResumeOptimizer({ careerData }: ResumeOptimizerProps) {
   const [input, setInput] = useState('');
+  const [targetRole, setTargetRole] = useState(careerData?.recommendedPivot || 'AI Prompt Engineer');
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const [score, setScore] = useState(0);
+  const [optimizedData, setOptimizedData] = useState<OptimizedResume | null>(null);
   const [isShared, setIsShared] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleOptimize = () => {
+  const handleOptimize = async () => {
     if (!input.trim()) return;
     setIsOptimizing(true);
     setShowResults(false);
+    setError(null);
     
-    // Simulate AI optimization
-    setTimeout(() => {
+    try {
+      const data = await optimizeResume(input, targetRole);
+      setOptimizedData(data);
       setIsOptimizing(false);
       setShowResults(true);
-      setScore(88);
-    }, 2500);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to optimize resume. Please check your API key.");
+      setIsOptimizing(false);
+    }
   };
 
   const handleShare = () => {
@@ -50,7 +62,15 @@ export default function ResumeOptimizer() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-xl font-black text-slate-900 tracking-tight">Current Experience</h2>
-            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">Paste your legacy bullets below</p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Targeting:</p>
+              <input 
+                type="text"
+                value={targetRole}
+                onChange={(e) => setTargetRole(e.target.value)}
+                className="text-[10px] font-bold text-blue-600 uppercase tracking-widest bg-transparent border-b border-blue-200 focus:outline-none focus:border-blue-500"
+              />
+            </div>
           </div>
           <button 
             onClick={() => setInput('')}
@@ -201,7 +221,7 @@ export default function ResumeOptimizer() {
                       />
                       <motion.path
                         initial={{ strokeDasharray: "0, 100" }}
-                        animate={{ strokeDasharray: `${score}, 100` }}
+                        animate={{ strokeDasharray: `${optimizedData?.atsScore || 0}, 100` }}
                         transition={{ duration: 1.5, ease: "easeOut" }}
                         className="text-blue-600"
                         strokeWidth="3"
@@ -212,7 +232,7 @@ export default function ResumeOptimizer() {
                       />
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-xl font-black text-blue-700">{score}%</span>
+                      <span className="text-xl font-black text-blue-700">{optimizedData?.atsScore}%</span>
                     </div>
                   </div>
                   <div>
@@ -226,7 +246,7 @@ export default function ResumeOptimizer() {
                   <div>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Keywords Injected</p>
                     <div className="flex flex-wrap gap-2">
-                      {keywords.map(tag => (
+                      {optimizedData?.injectedKeywords.map(tag => (
                         <span key={tag} className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-bold border border-emerald-100 flex items-center gap-1.5">
                           <CheckCircle2 className="w-3 h-3" />
                           {tag}
@@ -237,7 +257,7 @@ export default function ResumeOptimizer() {
                   <div>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Weak Phrases Removed</p>
                     <div className="flex flex-wrap gap-2">
-                      {weakPhrases.map(tag => (
+                      {optimizedData?.removedWeakPhrases.map(tag => (
                         <span key={tag} className="px-3 py-1 bg-red-50 text-red-700 rounded-full text-[10px] font-bold border border-red-100 flex items-center gap-1.5 line-through opacity-60">
                           <XCircle className="w-3 h-3" />
                           {tag}
@@ -252,18 +272,12 @@ export default function ResumeOptimizer() {
                   <div className="space-y-6 text-sm text-slate-700 leading-relaxed font-mono">
                     <p className="text-blue-600 font-bold tracking-tight mb-4 uppercase text-xs">Professional Experience Transformation</p>
                     <div className="space-y-4">
-                      <div className="flex gap-3">
-                        <ArrowRight className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                        <p>Architected and deployed <span className="text-slate-900 font-bold">Agentic Workflows</span> using LangChain, resulting in a 40% reduction in manual content processing time.</p>
-                      </div>
-                      <div className="flex gap-3">
-                        <ArrowRight className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                        <p>Implemented robust <span className="text-slate-900 font-bold">LLM Evaluation</span> frameworks to ensure brand voice consistency and compliance across automated social channels.</p>
-                      </div>
-                      <div className="flex gap-3">
-                        <ArrowRight className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                        <p>Engineered <span className="text-slate-900 font-bold">Retrieval Augmented Generation (RAG)</span> systems to synthesize weekly blog content from distributed internal data sources.</p>
-                      </div>
+                      {optimizedData?.optimizedBullets.map((bullet, i) => (
+                        <div key={i} className="flex gap-3">
+                          <ArrowRight className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                          <p>{bullet}</p>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>

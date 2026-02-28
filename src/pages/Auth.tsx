@@ -16,7 +16,18 @@ interface AuthProps {
 }
 
 export default function Auth({ onLogin, onBack }: AuthProps) {
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
+  const [resetEmail, setResetEmail] = useState('');
+  const [isResetSent, setIsResetSent] = useState(false);
+
+  const handleResetPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsResetSent(true);
+    // Simulate sending link
+    setTimeout(() => {
+      // In a real app, this would be an API call
+    }, 1000);
+  };
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-slate-50">
@@ -98,16 +109,84 @@ export default function Auth({ onLogin, onBack }: AuthProps) {
           animate={{ opacity: 1, x: 0 }}
           className="max-w-md w-full"
         >
-          <div className="mb-10">
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-2">
-              {mode === 'login' ? 'Welcome back' : 'Create an account'}
-            </h2>
-            <p className="text-slate-500">
-              {mode === 'login' 
-                ? 'Enter your credentials to access your career intelligence.' 
-                : 'Start your career evolution today. No credit card required.'}
-            </p>
-          </div>
+          {mode === 'forgot' ? (
+            <div className="space-y-8">
+              <div className="mb-10">
+                <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-2">
+                  Reset Password
+                </h2>
+                <p className="text-slate-500">
+                  Enter your email and we'll send you a link to get back into your account.
+                </p>
+              </div>
+
+              {isResetSent ? (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="bg-emerald-50 border border-emerald-100 p-8 rounded-3xl text-center"
+                >
+                  <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Mail className="w-8 h-8 text-emerald-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-emerald-900 mb-2">Check your email</h3>
+                  <p className="text-emerald-700 text-sm leading-relaxed mb-6">
+                    We've sent a password reset link to <span className="font-bold">{resetEmail}</span>.
+                  </p>
+                  <button 
+                    onClick={() => setMode('login')}
+                    className="text-emerald-600 font-bold text-sm hover:text-emerald-700 underline underline-offset-4"
+                  >
+                    Back to login
+                  </button>
+                </motion.div>
+              ) : (
+                <form className="space-y-6" onSubmit={handleResetPassword}>
+                  <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2 block">Email Address</label>
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                      <input 
+                        type="email" 
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        placeholder="name@company.com"
+                        className="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <button 
+                    type="submit"
+                    className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2 group"
+                  >
+                    Send Reset Link
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </button>
+
+                  <button 
+                    type="button"
+                    onClick={() => setMode('login')}
+                    className="w-full text-center text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </form>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="mb-10">
+                <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-2">
+                  {mode === 'login' ? 'Welcome back' : 'Create an account'}
+                </h2>
+                <p className="text-slate-500">
+                  {mode === 'login' 
+                    ? 'Enter your credentials to access your career intelligence.' 
+                    : 'Start your career evolution today. No credit card required.'}
+                </p>
+              </div>
 
           {/* OAuth Buttons */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
@@ -149,7 +228,11 @@ export default function Auth({ onLogin, onBack }: AuthProps) {
               <div className="flex justify-between items-center mb-2 ml-4">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Password</label>
                 {mode === 'login' && (
-                  <button type="button" className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:text-blue-700">
+                  <button 
+                    type="button" 
+                    onClick={() => setMode('forgot')}
+                    className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:text-blue-700"
+                  >
                     Forgot password?
                   </button>
                 )}
@@ -183,7 +266,9 @@ export default function Auth({ onLogin, onBack }: AuthProps) {
               {mode === 'login' ? 'Sign up' : 'Log in'}
             </button>
           </p>
-        </motion.div>
+        </>
+      )}
+    </motion.div>
       </div>
     </div>
   );
