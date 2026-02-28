@@ -247,7 +247,10 @@ export default function Settings() {
                       Next billing date: March 01, 2026
                     </div>
                   </div>
-                  <button className="bg-white text-slate-900 px-6 py-3 rounded-2xl font-bold text-sm hover:bg-slate-100 transition-all shadow-lg active:scale-95">
+                  <button 
+                    onClick={() => alert("Redirecting to Stripe Customer Portal...")}
+                    className="bg-white text-slate-900 px-6 py-3 rounded-2xl font-bold text-sm hover:bg-slate-100 transition-all shadow-lg active:scale-95"
+                  >
                     Manage Subscription
                   </button>
                 </div>
@@ -307,7 +310,10 @@ export default function Settings() {
                             </span>
                           </td>
                           <td className="py-4 text-right">
-                            <button className="p-2 text-slate-400 hover:text-blue-600 transition-colors">
+                            <button 
+                              onClick={() => alert(`Downloading invoice for ${invoice.date}...`)}
+                              className="p-2 text-slate-400 hover:text-blue-600 transition-colors"
+                            >
                               <Download className="w-4 h-4" />
                             </button>
                           </td>
@@ -348,7 +354,10 @@ export default function Settings() {
                       className="w-full bg-white border border-slate-200 rounded-xl py-2 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                     />
                   </div>
-                  <button className="mt-4 bg-slate-900 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-slate-800 transition-all">
+                  <button 
+                    onClick={() => alert("Password update initiated. Check your email for confirmation.")}
+                    className="mt-4 bg-slate-900 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-slate-800 transition-all"
+                  >
                     Update Password
                   </button>
                 </div>
@@ -358,7 +367,7 @@ export default function Settings() {
                     <h4 className="font-bold text-slate-900">Two-Factor Authentication</h4>
                     <p className="text-sm text-slate-500">Add an extra layer of security to your account.</p>
                   </div>
-                  <Toggle enabled={false} onChange={() => {}} />
+                  <Toggle enabled={false} onChange={() => alert("2FA setup will be available in the next update.")} />
                 </div>
               </div>
             </motion.div>
@@ -385,12 +394,23 @@ export default function Settings() {
                   </div>
                   <div className="bg-slate-800 rounded-xl p-4 flex items-center justify-between gap-4 mb-4">
                     <code className="text-blue-400 font-mono text-sm truncate">pk_live_51P...9k2m</code>
-                    <button className="text-xs font-bold text-slate-400 hover:text-white transition-colors">Copy</button>
+                    <button 
+                      onClick={() => {
+                        navigator.clipboard.writeText("pk_live_51P...9k2m");
+                        alert("API key copied to clipboard!");
+                      }}
+                      className="text-xs font-bold text-slate-400 hover:text-white transition-colors"
+                    >
+                      Copy
+                    </button>
                   </div>
                   <p className="text-xs text-slate-400">Created on Jan 12, 2026. Never share your secret keys.</p>
                 </div>
 
-                <button className="w-full py-4 border-2 border-dashed border-slate-200 rounded-3xl text-sm font-bold text-slate-500 hover:border-blue-300 hover:text-blue-600 transition-all">
+                <button 
+                  onClick={() => alert("New API key generation is currently restricted to Enterprise accounts.")}
+                  className="w-full py-4 border-2 border-dashed border-slate-200 rounded-3xl text-sm font-bold text-slate-500 hover:border-blue-300 hover:text-blue-600 transition-all"
+                >
                   + Create New API Key
                 </button>
               </div>

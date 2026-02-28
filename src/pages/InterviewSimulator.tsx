@@ -29,13 +29,21 @@ interface InterviewSimulatorProps {
 }
 
 export default function InterviewSimulator({ careerData, setView }: InterviewSimulatorProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      role: 'ai',
-      content: `Hello Alex! I'm Coach Atlas. Today we're conducting a technical interview for the ${careerData?.recommendedPivot || 'AI Prompt Engineer'} position. To start, can you explain how you would optimize a prompt to reduce hallucinations in a RAG-based system?`
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const saved = localStorage.getItem('pivotai_interview_messages');
+    if (saved) return JSON.parse(saved);
+    return [
+      {
+        id: '1',
+        role: 'ai',
+        content: `Hello Alex! I'm Coach Atlas. Today we're conducting a technical interview for the ${careerData?.recommendedPivot || 'AI Prompt Engineer'} position. To start, can you explain how you would optimize a prompt to reduce hallucinations in a RAG-based system?`
+      }
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('pivotai_interview_messages', JSON.stringify(messages));
+  }, [messages]);
   const [input, setInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
@@ -171,11 +179,15 @@ export default function InterviewSimulator({ careerData, setView }: InterviewSim
           <div className="mt-auto pt-8 border-t border-white/10 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <button 
-                onClick={() => setMessages([{
-                  id: '1',
-                  role: 'ai',
-                  content: `Hello Alex! I'm Coach Atlas. Today we're conducting a technical interview for the ${careerData?.recommendedPivot || 'AI Prompt Engineer'} position. To start, can you explain how you would optimize a prompt to reduce hallucinations in a RAG-based system?`
-                }])}
+                onClick={() => {
+                  const initialMessages: Message[] = [{
+                    id: '1',
+                    role: 'ai',
+                    content: `Hello Alex! I'm Coach Atlas. Today we're conducting a technical interview for the ${careerData?.recommendedPivot || 'AI Prompt Engineer'} position. To start, can you explain how you would optimize a prompt to reduce hallucinations in a RAG-based system?`
+                  }];
+                  setMessages(initialMessages);
+                  localStorage.setItem('pivotai_interview_messages', JSON.stringify(initialMessages));
+                }}
                 className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-white transition-colors"
               >
                 <RotateCcw className="w-4 h-4" />

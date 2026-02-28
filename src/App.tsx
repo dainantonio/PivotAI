@@ -36,9 +36,20 @@ import { CareerPath } from './services/geminiService';
 
 export default function App() {
   const [view, setView] = useState<'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings' | 'job-matches'>('landing');
-  const [careerData, setCareerData] = useState<CareerPath | null>(null);
+  const [careerData, setCareerData] = useState<CareerPath | null>(() => {
+    const saved = localStorage.getItem('pivotai_career_data');
+    return saved ? JSON.parse(saved) : null;
+  });
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (careerData) {
+      localStorage.setItem('pivotai_career_data', JSON.stringify(careerData));
+    } else {
+      localStorage.removeItem('pivotai_career_data');
+    }
+  }, [careerData]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -66,7 +77,7 @@ export default function App() {
         {view === 'interview' && <InterviewSimulator careerData={careerData} setView={setView} />}
         {view === 'learning' && <LearningHub setView={setView} />}
         {view === 'curriculum' && <CurriculumPlayer careerData={careerData} />}
-        {view === 'portfolio' && <PortfolioBuilder />}
+        {view === 'portfolio' && <PortfolioBuilder careerData={careerData} />}
         {view === 'community' && <CommunityNetwork />}
         {view === 'settings' && <Settings />}
       </AppShell>

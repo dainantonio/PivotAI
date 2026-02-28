@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Plus, 
   Eye, 
@@ -14,6 +14,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { generateProjectDescription, CareerPath } from '../services/geminiService';
 
 interface Project {
   id: string;
@@ -25,37 +26,50 @@ interface Project {
   imageSeed: string;
 }
 
-export default function PortfolioBuilder() {
+interface PortfolioBuilderProps {
+  careerData: CareerPath | null;
+}
+
+export default function PortfolioBuilder({ careerData }: PortfolioBuilderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      id: '1',
-      title: 'Automated Customer Support Agent',
-      description: 'A multi-agent system using LangGraph to handle complex support tickets with RAG.',
-      techStack: ['LangChain', 'OpenAI API', 'Next.js'],
-      status: 'live',
-      views: 452,
-      imageSeed: 'support'
-    },
-    {
-      id: '2',
-      title: 'Legal Document Summarizer',
-      description: 'Fine-tuned Llama 3 model for extracting key clauses from commercial contracts.',
-      techStack: ['PyTorch', 'HuggingFace', 'FastAPI'],
-      status: 'live',
-      views: 289,
-      imageSeed: 'legal'
-    },
-    {
-      id: '3',
-      title: 'AI-Powered Content Engine',
-      description: 'Automated workflow for generating SEO-optimized blog posts from trending topics.',
-      techStack: ['GPT-4', 'Python', 'Supabase'],
-      status: 'draft',
-      views: 0,
-      imageSeed: 'content'
-    }
-  ]);
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [projects, setProjects] = useState<Project[]>(() => {
+    const saved = localStorage.getItem('pivotai_portfolio_projects');
+    if (saved) return JSON.parse(saved);
+    return [
+      {
+        id: '1',
+        title: 'Automated Customer Support Agent',
+        description: 'A multi-agent system using LangGraph to handle complex support tickets with RAG.',
+        techStack: ['LangChain', 'OpenAI API', 'Next.js'],
+        status: 'live',
+        views: 452,
+        imageSeed: 'support'
+      },
+      {
+        id: '2',
+        title: 'Legal Document Summarizer',
+        description: 'Fine-tuned Llama 3 model for extracting key clauses from commercial contracts.',
+        techStack: ['PyTorch', 'HuggingFace', 'FastAPI'],
+        status: 'live',
+        views: 289,
+        imageSeed: 'legal'
+      },
+      {
+        id: '3',
+        title: 'AI-Powered Content Engine',
+        description: 'Automated workflow for generating SEO-optimized blog posts from trending topics.',
+        techStack: ['GPT-4', 'Python', 'Supabase'],
+        status: 'draft',
+        views: 0,
+        imageSeed: 'content'
+      }
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('pivotai_portfolio_projects', JSON.stringify(projects));
+  }, [projects]);
 
   const [newProject, setNewProject] = useState({
     title: '',
@@ -77,6 +91,23 @@ export default function PortfolioBuilder() {
     setProjects([project, ...projects]);
     setIsModalOpen(false);
     setNewProject({ title: '', description: '', techStack: '', status: 'draft' });
+  };
+
+  const handleEnhanceDescription = async () => {
+    if (!newProject.title || !newProject.description) return;
+    setIsEnhancing(true);
+    try {
+      const enhanced = await generateProjectDescription(
+        newProject.title,
+        newProject.description,
+        careerData?.recommendedPivot || 'AI Engineer'
+      );
+      setNewProject(prev => ({ ...prev, description: enhanced }));
+    } catch (error) {
+      console.error('Failed to enhance description:', error);
+    } finally {
+      setIsEnhancing(false);
+    }
   };
 
   const stats = [
@@ -162,7 +193,17 @@ export default function PortfolioBuilder() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Description</label>
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Description</label>
+                    <button 
+                      onClick={handleEnhanceDescription}
+                      disabled={isEnhancing || !newProject.description}
+                      className="flex items-center gap-1.5 text-[10px] font-black text-blue-600 uppercase tracking-widest hover:text-blue-700 transition-colors disabled:opacity-50"
+                    >
+                      <Sparkles className={`w-3 h-3 ${isEnhancing ? 'animate-spin' : ''}`} />
+                      {isEnhancing ? 'Enhancing...' : 'Magic Write'}
+                    </button>
+                  </div>
                   <textarea 
                     rows={4}
                     placeholder="Describe the problem you solved and the AI architecture you used..."

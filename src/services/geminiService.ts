@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type, ThinkingLevel } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
@@ -27,11 +27,11 @@ export interface CareerPath {
 }
 
 /**
- * Optimizes a resume for a target role using Gemini 1.5 Flash.
+ * Optimizes a resume for a target role using Gemini 3 Flash.
  */
 export async function optimizeResume(legacyText: string, targetRole: string): Promise<OptimizedResume> {
   const response = await ai.models.generateContent({
-    model: "gemini-1.5-flash",
+    model: "gemini-3-flash-preview",
     contents: `Legacy Resume: ${legacyText}\nTarget Role: ${targetRole}`,
     config: {
       systemInstruction: "You are an Expert Technical Recruiter. Your task is to rewrite the provided legacy resume text to highlight transferable skills for the target role. Use strong action verbs and remove weak phrasing. Ensure the output is professional and optimized for ATS systems.",
@@ -56,20 +56,18 @@ export async function optimizeResume(legacyText: string, targetRole: string): Pr
  * Powers the AI Mock Interviewer "Coach Atlas".
  */
 export async function interview(messages: { role: string, content: string }[], currentAnswer: string, targetRole: string): Promise<InterviewResponse> {
-  // Sanitize history: map to { role: 'user' | 'model', parts: [{ text }] }
-  // Ensure history starts with 'user'
   const history = messages.map(msg => ({
     role: msg.role === 'user' ? 'user' : 'model',
     parts: [{ text: msg.content }]
   }));
-
-  // If history is empty or doesn't start with user, we might need to adjust, 
-  // but usually the first message is the AI's intro.
-  // Gemini startChat history must alternate and start with user if provided.
-  // If the first message is 'model', we can prepend a dummy user message or just start fresh.
   
-  const chat = ai.chats.create({
-    model: "gemini-1.5-flash",
+  const response = await ai.models.generateContent({
+    model: "gemini-3.1-pro-preview",
+    contents: {
+      parts: [
+        { text: `Interview History: ${JSON.stringify(history)}\n\nUser Answer: ${currentAnswer}\n\nTarget Role: ${targetRole}` }
+      ]
+    },
     config: {
       systemInstruction: `You are Coach Atlas, a tough but fair technical interviewer for a ${targetRole}. The user just answered your last question. Provide exactly 1 sentence of constructive feedback, followed by the next technical interview question.`,
       responseMimeType: "application/json",
@@ -80,12 +78,11 @@ export async function interview(messages: { role: string, content: string }[], c
           nextQuestion: { type: Type.STRING, description: "The next technical interview question" }
         },
         required: ["feedback", "nextQuestion"]
-      }
-    },
-    history: history.length > 0 && history[0].role === 'user' ? history : []
+      },
+      thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH }
+    }
   });
 
-  const response = await chat.sendMessage({ message: currentAnswer });
   return JSON.parse(response.text || '{}');
 }
 
@@ -94,7 +91,7 @@ export async function interview(messages: { role: string, content: string }[], c
  */
 export async function generatePath(currentRole: string, industry: string): Promise<CareerPath> {
   const response = await ai.models.generateContent({
-    model: "gemini-1.5-flash",
+    model: "gemini-3-flash-preview",
     contents: `Current Role: ${currentRole}\nIndustry: ${industry}`,
     config: {
       systemInstruction: "You are an AI Career Strategist. Calculate the user's risk of AI automation, identify 4 transferable skills, and recommend the best tech-adjacent pivot role (e.g., AI Prompt Engineer, AI Auditor). Finally, generate a 3-module learning syllabus.",
@@ -126,4 +123,19 @@ export async function generatePath(currentRole: string, industry: string): Promi
   });
 
   return JSON.parse(response.text || '{}');
+}
+
+/**
+ * AI-Assisted Portfolio Writing: Enhances project descriptions.
+ */
+export async function generateProjectDescription(title: string, rawNotes: string, targetRole: string): Promise<string> {
+  const response = await ai.models.generateContent({
+    model: "gemini-3-flash-preview",
+    contents: `Project Title: ${title}\nRaw Notes: ${rawNotes}\nTarget Role: ${targetRole}`,
+    config: {
+      systemInstruction: "You are a Technical Writer. Rewrite the provided raw project notes into a high-impact, professional description for a portfolio. Focus on the 'Action-Result' framework and highlight transferable skills relevant to the target role. Keep it under 3 sentences.",
+    }
+  });
+
+  return response.text || rawNotes;
 }

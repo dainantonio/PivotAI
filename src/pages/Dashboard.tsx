@@ -12,6 +12,13 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { 
+  Radar, 
+  RadarChart, 
+  PolarGrid, 
+  PolarAngleAxis, 
+  ResponsiveContainer 
+} from 'recharts';
 import { generatePath, CareerPath } from '../services/geminiService';
 
 type EngineState = 'idle' | 'loading' | 'results';
@@ -29,6 +36,23 @@ export default function Dashboard({ careerData, setCareerData, setView }: Dashbo
   const [currentRole, setCurrentRole] = useState('');
   const [industry, setIndustry] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  // Mock data for the skill gap chart
+  const skillData = careerData ? [
+    { subject: 'AI/ML', A: 20, B: 90, fullMark: 100 },
+    { subject: 'Architecture', A: 80, B: 85, fullMark: 100 },
+    { subject: 'Data Ops', A: 40, B: 75, fullMark: 100 },
+    { subject: 'Strategy', A: 90, B: 95, fullMark: 100 },
+    { subject: 'Ethics', A: 30, B: 80, fullMark: 100 },
+    { subject: 'Python', A: 50, B: 85, fullMark: 100 },
+  ] : [
+    { subject: 'Skill 1', A: 120, B: 110, fullMark: 150 },
+    { subject: 'Skill 2', A: 98, B: 130, fullMark: 150 },
+    { subject: 'Skill 3', A: 86, B: 130, fullMark: 150 },
+    { subject: 'Skill 4', A: 99, B: 100, fullMark: 150 },
+    { subject: 'Skill 5', A: 85, B: 90, fullMark: 150 },
+    { subject: 'Skill 6', A: 65, B: 85, fullMark: 150 },
+  ];
 
   const loadingSteps = [
     "Cross-referencing 50k+ job descriptions...",
@@ -307,27 +331,46 @@ export default function Dashboard({ careerData, setCareerData, setView }: Dashbo
                 <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-blue-600/10 blur-[100px] rounded-full" />
               </motion.div>
 
-              {/* Secondary Path */}
-              <motion.div variants={itemVariants} className="md:col-span-2 bg-white rounded-[2rem] border border-slate-200 p-10 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
-                <div>
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="bg-purple-50 text-purple-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
-                      75% Match
-                    </div>
-                  </div>
-                  <p className="text-slate-400 text-xs font-black uppercase tracking-[0.2em] mb-3">Secondary Pivot</p>
-                  <h3 className="text-2xl font-black text-slate-900 mb-4 leading-tight">Human-in-the-Loop Auditor</h3>
-                  <p className="text-sm text-slate-500 leading-relaxed">
-                    Leverage your domain expertise to validate AI outputs for compliance and brand voice consistency.
-                  </p>
+              {/* Skill Gap Analysis Chart */}
+              <motion.div variants={itemVariants} className="md:col-span-2 bg-white rounded-[2rem] border border-slate-200 p-8 flex flex-col shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                <div className="mb-4">
+                  <p className="text-slate-400 text-xs font-black uppercase tracking-[0.2em] mb-1">Skill Gap Analysis</p>
+                  <h3 className="text-xl font-black text-slate-900">Current vs. Target</h3>
                 </div>
-                <button 
-                  onClick={() => setView('curriculum')}
-                  className="mt-8 flex items-center gap-2 text-sm font-bold text-slate-900 hover:text-blue-600 transition-colors group"
-                >
-                  View Path Details
-                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </button>
+                
+                <div className="flex-1 min-h-[250px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart cx="50%" cy="50%" outerRadius="70%" data={skillData}>
+                      <PolarGrid stroke="#e2e8f0" />
+                      <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }} />
+                      <Radar
+                        name="Current"
+                        dataKey="A"
+                        stroke="#94a3b8"
+                        fill="#94a3b8"
+                        fillOpacity={0.3}
+                      />
+                      <Radar
+                        name="Target"
+                        dataKey="B"
+                        stroke="#2563eb"
+                        fill="#2563eb"
+                        fillOpacity={0.5}
+                      />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="flex items-center justify-center gap-6 mt-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-slate-400" />
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Current</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-blue-600" />
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Target Role</span>
+                  </div>
+                </div>
               </motion.div>
             </div>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Users, 
   MessageSquare, 
@@ -45,30 +45,38 @@ interface Post {
 
 export default function CommunityNetwork() {
   const [activeTab, setActiveTab] = useState<'mentors' | 'discussion' | 'events'>('mentors');
-  const [posts, setPosts] = useState<Post[]>([
-    {
-      id: '1',
-      author: 'Alex Morgan',
-      avatar: 'https://i.pravatar.cc/150?u=alex',
-      title: 'How to handle hallucination in production RAG?',
-      content: 'I\'m seeing about 5% hallucination rate even with strict system prompts. What are your favorite evaluation frameworks?',
-      tags: ['RAG', 'Evaluation', 'Production'],
-      likes: 24,
-      replies: 12,
-      time: '2h ago'
-    },
-    {
-      id: '2',
-      author: 'Sarah Chen',
-      avatar: 'https://i.pravatar.cc/150?u=sarah',
-      title: 'Transitioning from Sales to AI PM',
-      content: 'Sharing my journey of how I used my negotiation skills to land a PM role at Stripe. Hint: It\'s all about the data.',
-      tags: ['Career Pivot', 'Product Management'],
-      likes: 56,
-      replies: 8,
-      time: '5h ago'
-    }
-  ]);
+  const [posts, setPosts] = useState<Post[]>(() => {
+    const saved = localStorage.getItem('pivotai_community_posts');
+    if (saved) return JSON.parse(saved);
+    return [
+      {
+        id: '1',
+        author: 'Alex Morgan',
+        avatar: 'https://i.pravatar.cc/150?u=alex',
+        title: 'How to handle hallucination in production RAG?',
+        content: 'I\'m seeing about 5% hallucination rate even with strict system prompts. What are your favorite evaluation frameworks?',
+        tags: ['RAG', 'Evaluation', 'Production'],
+        likes: 24,
+        replies: 12,
+        time: '2h ago'
+      },
+      {
+        id: '2',
+        author: 'Sarah Chen',
+        avatar: 'https://i.pravatar.cc/150?u=sarah',
+        title: 'Transitioning from Sales to AI PM',
+        content: 'Sharing my journey of how I used my negotiation skills to land a PM role at Stripe. Hint: It\'s all about the data.',
+        tags: ['Career Pivot', 'Product Management'],
+        likes: 56,
+        replies: 8,
+        time: '5h ago'
+      }
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('pivotai_community_posts', JSON.stringify(posts));
+  }, [posts]);
 
   const [newPostContent, setNewPostContent] = useState('');
 
@@ -392,7 +400,7 @@ export default function CommunityNetwork() {
         </div>
 
         {/* Community Stats Card */}
-        <div className="bg-blue-600 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+        <div className="bg-blue-600 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden mb-6">
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-4">
               <Users className="w-5 h-5" />
@@ -410,6 +418,40 @@ export default function CommunityNetwork() {
             </div>
           </div>
           <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 blur-[60px] rounded-full" />
+        </div>
+
+        {/* Live Activity Feed */}
+        <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              Live Activity
+            </h2>
+          </div>
+          <div className="space-y-6">
+            {[
+              { user: 'Marco T.', action: 'started a new path', time: 'Just now' },
+              { user: 'Sarah C.', action: 'liked your post', time: '2m ago' },
+              { user: 'Elena R.', action: 'published a project', time: '5m ago' },
+              { user: 'David K.', action: 'completed Module 1', time: '12m ago' },
+            ].map((event, i) => (
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.2 }}
+                className="flex gap-3"
+              >
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-1.5 shrink-0" />
+                <div>
+                  <p className="text-xs font-bold text-slate-900">
+                    {event.user} <span className="font-medium text-slate-500">{event.action}</span>
+                  </p>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{event.time}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </aside>
     </div>
