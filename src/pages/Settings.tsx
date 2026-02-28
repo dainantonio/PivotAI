@@ -320,6 +320,83 @@ export default function Settings() {
             </motion.div>
           )}
 
+          {activeTab === 'security' && (
+            <motion.div
+              key="security"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-10"
+            >
+              <div>
+                <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-1">Account Security</h2>
+                <p className="text-slate-500">Manage your password and security preferences.</p>
+              </div>
+
+              <div className="space-y-6">
+                <div className="p-6 bg-slate-50 rounded-3xl border border-slate-200">
+                  <h4 className="font-bold text-slate-900 mb-4">Change Password</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input 
+                      type="password" 
+                      placeholder="Current Password"
+                      className="w-full bg-white border border-slate-200 rounded-xl py-2 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                    />
+                    <input 
+                      type="password" 
+                      placeholder="New Password"
+                      className="w-full bg-white border border-slate-200 rounded-xl py-2 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                    />
+                  </div>
+                  <button className="mt-4 bg-slate-900 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-slate-800 transition-all">
+                    Update Password
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-6 bg-slate-50 rounded-3xl border border-slate-200">
+                  <div>
+                    <h4 className="font-bold text-slate-900">Two-Factor Authentication</h4>
+                    <p className="text-sm text-slate-500">Add an extra layer of security to your account.</p>
+                  </div>
+                  <Toggle enabled={false} onChange={() => {}} />
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'api' && (
+            <motion.div
+              key="api"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-10"
+            >
+              <div>
+                <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-1">API Usage</h2>
+                <p className="text-slate-500">Manage your API keys for integrating PivotAI into your workflows.</p>
+              </div>
+
+              <div className="space-y-6">
+                <div className="p-8 bg-slate-900 rounded-3xl text-white shadow-xl">
+                  <div className="flex items-center justify-between mb-6">
+                    <h4 className="font-bold">Production API Key</h4>
+                    <span className="px-2 py-0.5 bg-emerald-500 text-[10px] font-black uppercase tracking-widest rounded">Active</span>
+                  </div>
+                  <div className="bg-slate-800 rounded-xl p-4 flex items-center justify-between gap-4 mb-4">
+                    <code className="text-blue-400 font-mono text-sm truncate">pk_live_51P...9k2m</code>
+                    <button className="text-xs font-bold text-slate-400 hover:text-white transition-colors">Copy</button>
+                  </div>
+                  <p className="text-xs text-slate-400">Created on Jan 12, 2026. Never share your secret keys.</p>
+                </div>
+
+                <button className="w-full py-4 border-2 border-dashed border-slate-200 rounded-3xl text-sm font-bold text-slate-500 hover:border-blue-300 hover:text-blue-600 transition-all">
+                  + Create New API Key
+                </button>
+              </div>
+            </motion.div>
+          )}
+
           {activeTab === 'notifications' && (
             <motion.div
               key="notifications"

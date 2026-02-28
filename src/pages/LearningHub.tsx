@@ -9,262 +9,241 @@ import {
   ChevronRight,
   Clock,
   BookOpen,
-  Star
+  Star,
+  Search,
+  Filter,
+  Sparkles,
+  Zap,
+  TrendingUp,
+  Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-interface Lesson {
+interface Course {
   id: string;
   title: string;
+  instructor: string;
   duration: string;
-  status: 'completed' | 'active' | 'locked';
+  level: 'Beginner' | 'Intermediate' | 'Advanced';
+  rating: number;
+  students: number;
+  imageSeed: string;
+  category: string;
+  progress?: number;
 }
 
-export default function LearningHub() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'transcript' | 'resources'>('overview');
+interface LearningHubProps {
+  setView: (view: any) => void;
+}
+
+export default function LearningHub({ setView }: LearningHubProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [enrolledCourses, setEnrolledCourses] = useState<string[]>(['1']);
   
-  const lessons: Lesson[] = [
-    { id: '1', title: 'Introduction to LLM Architecture', duration: '12:45', status: 'completed' },
-    { id: '2', title: 'Tokenization and Embedding Basics', duration: '18:20', status: 'completed' },
-    { id: '3', title: 'Zero-Shot vs. Few-Shot Prompting', duration: '24:15', status: 'active' },
-    { id: '4', title: 'Chain-of-Thought Engineering', duration: '32:10', status: 'locked' },
-    { id: '5', title: 'Prompt Injection Security', duration: '15:40', status: 'locked' },
-    { id: '6', title: 'Output Parsing and Validation', duration: '21:05', status: 'locked' },
+  const courses: Course[] = [
+    {
+      id: '1',
+      title: 'Prompt Engineering Foundations',
+      instructor: 'Coach Atlas',
+      duration: '12h 45m',
+      level: 'Beginner',
+      rating: 4.9,
+      students: 12402,
+      imageSeed: 'ai-brain',
+      category: 'Core AI',
+      progress: 35
+    },
+    {
+      id: '2',
+      title: 'Advanced RAG Architectures',
+      instructor: 'Dr. Elena Rodriguez',
+      duration: '18h 20m',
+      level: 'Advanced',
+      rating: 4.8,
+      students: 5620,
+      imageSeed: 'network',
+      category: 'Engineering'
+    },
+    {
+      id: '3',
+      title: 'AI Product Strategy',
+      instructor: 'Sarah Chen',
+      duration: '10h 15m',
+      level: 'Intermediate',
+      rating: 4.7,
+      students: 8900,
+      imageSeed: 'strategy',
+      category: 'Product'
+    },
+    {
+      id: '4',
+      title: 'LLM Security & Safety',
+      instructor: 'Marcus Thorne',
+      duration: '8h 30m',
+      level: 'Intermediate',
+      rating: 4.9,
+      students: 3400,
+      imageSeed: 'security',
+      category: 'Safety'
+    }
   ];
 
-  const progress = 35;
-
   return (
-    <div className="flex flex-col lg:flex-row gap-8 min-h-[calc(100vh-160px)]">
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col gap-6 min-w-0">
-        {/* Video Player Placeholder */}
-        <div className="aspect-video bg-slate-900 rounded-3xl relative overflow-hidden group border border-slate-800 shadow-2xl">
-          <img 
-            src="https://picsum.photos/seed/learning/1280/720?blur=2" 
-            alt="Video Background" 
-            className="absolute inset-0 w-full h-full object-cover opacity-40"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <motion.button 
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="w-20 h-20 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-2xl shadow-blue-500/40 group-hover:bg-blue-500 transition-colors"
-            >
-              <Play className="w-8 h-8 fill-current ml-1" />
-            </motion.button>
-          </div>
-          
-          {/* Video Overlay Info */}
-          <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-slate-900 to-transparent">
-            <h1 className="text-2xl font-bold text-white mb-2">3. Zero-Shot vs. Few-Shot Prompting</h1>
-            <div className="flex items-center gap-4 text-slate-300 text-sm font-medium">
-              <span className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4" />
-                24:15
-              </span>
-              <span className="w-1 h-1 bg-slate-500 rounded-full" />
-              <span className="flex items-center gap-1.5 text-blue-400">
-                <Star className="w-4 h-4 fill-current" />
-                Advanced Module
-              </span>
-            </div>
-          </div>
+    <div className="space-y-10 pb-12">
+      {/* Header & Search */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Learning Hub</h1>
+          <p className="text-slate-500 mt-1">Master the skills needed for your next career move.</p>
         </div>
-
-        {/* Tabbed Interface */}
-        <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-          <div className="flex border-b border-slate-100">
-            {(['overview', 'transcript', 'resources'] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-8 py-5 text-sm font-bold uppercase tracking-widest transition-all relative ${
-                  activeTab === tab ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'
-                }`}
-              >
-                {tab}
-                {activeTab === tab && (
-                  <motion.div 
-                    layoutId="activeTab"
-                    className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600"
-                  />
-                )}
-              </button>
-            ))}
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input 
+              type="text" 
+              placeholder="Search courses..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-white border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all w-64"
+            />
           </div>
-          
-          <div className="p-8 min-h-[200px]">
-            <AnimatePresence mode="wait">
-              {activeTab === 'overview' && (
-                <motion.div
-                  key="overview"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="space-y-4"
-                >
-                  <h3 className="text-xl font-bold text-slate-900">Lesson Description</h3>
-                  <p className="text-slate-600 leading-relaxed">
-                    In this lesson, we explore the fundamental differences between zero-shot and few-shot prompting techniques. 
-                    You'll learn how to provide context and examples to Large Language Models to significantly improve 
-                    output accuracy and formatting consistency.
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                    <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-                      <span className="text-sm text-slate-700 font-medium">Master context-window optimization</span>
-                    </div>
-                    <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-                      <span className="text-sm text-slate-700 font-medium">Build robust few-shot templates</span>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-              {activeTab === 'transcript' && (
-                <motion.div
-                  key="transcript"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="space-y-4"
-                >
-                  <div className="space-y-6">
-                    <div className="flex gap-4">
-                      <span className="text-blue-600 font-mono text-sm shrink-0">00:12</span>
-                      <p className="text-slate-600 text-sm leading-relaxed">Welcome back everyone. Today we're diving deep into the core of prompt engineering...</p>
-                    </div>
-                    <div className="flex gap-4">
-                      <span className="text-blue-600 font-mono text-sm shrink-0">01:45</span>
-                      <p className="text-slate-600 text-sm leading-relaxed">Zero-shot prompting is exactly what it sounds like: asking the model a question without any prior examples...</p>
-                    </div>
-                    <div className="flex gap-4">
-                      <span className="text-blue-600 font-mono text-sm shrink-0">03:20</span>
-                      <p className="text-slate-600 text-sm leading-relaxed">Now, let's contrast that with few-shot prompting, where we provide 2-5 examples of the desired output format...</p>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-              {activeTab === 'resources' && (
-                <motion.div
-                  key="resources"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="grid grid-cols-1 md:grid-cols-2 gap-4"
-                >
-                  <button className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl hover:border-blue-200 hover:bg-blue-50 transition-all group text-left">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-100 transition-colors">
-                        <FileText className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-slate-900">Prompt Templates.pdf</p>
-                        <p className="text-xs text-slate-500">2.4 MB • PDF</p>
-                      </div>
-                    </div>
-                    <Download className="w-5 h-5 text-slate-400 group-hover:text-blue-600 transition-colors" />
-                  </button>
-                  <button className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl hover:border-blue-200 hover:bg-blue-50 transition-all group text-left">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-purple-50 text-purple-600 rounded-lg group-hover:bg-purple-100 transition-colors">
-                        <BookOpen className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-slate-900">Advanced Reading.epub</p>
-                        <p className="text-xs text-slate-500">1.1 MB • EPUB</p>
-                      </div>
-                    </div>
-                    <Download className="w-5 h-5 text-slate-400 group-hover:text-purple-600 transition-colors" />
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          <button className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors">
+            <Filter className="w-5 h-5" />
+          </button>
         </div>
       </div>
 
-      {/* Right Sidebar: Curriculum */}
-      <aside className="w-full lg:w-96 flex flex-col gap-6">
-        <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-sm font-black text-slate-400 uppercase tracking-widest">Course Progress</h2>
-              <span className="text-sm font-black text-blue-600">{progress}%</span>
+      {/* Categories */}
+      <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+        {['All Courses', 'Core AI', 'Engineering', 'Product', 'Safety', 'Ethics'].map((cat, i) => (
+          <button 
+            key={cat}
+            className={`px-6 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
+              i === 0 ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-300'
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Featured Course */}
+      <div className="relative bg-slate-900 rounded-[2.5rem] p-8 md:p-12 overflow-hidden shadow-2xl group">
+        <div className="absolute inset-0 opacity-40 group-hover:scale-105 transition-transform duration-1000">
+          <img 
+            src="https://picsum.photos/seed/ai-future/1920/1080?blur=2" 
+            alt="Featured" 
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+        <div className="relative z-10 max-w-2xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-400 text-[10px] font-black uppercase tracking-widest mb-6">
+            <Sparkles className="w-3 h-3 fill-current" />
+            Trending Now
+          </div>
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-6 leading-tight">
+            The Complete Guide to <br />
+            <span className="text-blue-500">Agentic Workflows</span>
+          </h2>
+          <p className="text-slate-300 text-lg mb-8 leading-relaxed">
+            Learn how to build autonomous AI agents that can plan, use tools, and collaborate to solve complex problems.
+          </p>
+          <div className="flex flex-wrap gap-6 mb-10">
+            <div className="flex items-center gap-2 text-white font-bold">
+              <Clock className="w-5 h-5 text-blue-500" />
+              24 Hours
             </div>
-            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-              <motion.div 
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                className="h-full bg-blue-600"
-              />
+            <div className="flex items-center gap-2 text-white font-bold">
+              <Users className="w-5 h-5 text-blue-500" />
+              15.2k Students
+            </div>
+            <div className="flex items-center gap-2 text-white font-bold">
+              <TrendingUp className="w-5 h-5 text-blue-500" />
+              Advanced
             </div>
           </div>
+          <button 
+            onClick={() => {
+              alert("Enrolled in Agentic Workflows! Redirecting to curriculum...");
+              setView('curriculum');
+            }}
+            className="bg-blue-600 text-white px-10 py-4 rounded-2xl font-black text-lg hover:bg-blue-500 transition-all shadow-xl shadow-blue-500/20 active:scale-95 flex items-center gap-3"
+          >
+            Enroll Now
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-blue-600/20 blur-[120px] rounded-full" />
+      </div>
 
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-black text-slate-900 mb-4 tracking-tight">Module 1: Foundations</h3>
-              <div className="space-y-2">
-                {lessons.map((lesson) => (
-                  <button
-                    key={lesson.id}
-                    disabled={lesson.status === 'locked'}
-                    className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all text-left group ${
-                      lesson.status === 'active' 
-                        ? 'bg-blue-50 border border-blue-100' 
-                        : lesson.status === 'locked'
-                        ? 'opacity-60 cursor-not-allowed'
-                        : 'hover:bg-slate-50 border border-transparent'
-                    }`}
-                  >
-                    <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                      lesson.status === 'completed' 
-                        ? 'bg-emerald-100 text-emerald-600' 
-                        : lesson.status === 'active'
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-                        : 'bg-slate-100 text-slate-400'
-                    }`}>
-                      {lesson.status === 'completed' && <CheckCircle2 className="w-5 h-5" />}
-                      {lesson.status === 'active' && <Play className="w-4 h-4 fill-current" />}
-                      {lesson.status === 'locked' && <Lock className="w-4 h-4" />}
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-sm truncate ${
-                        lesson.status === 'active' ? 'font-bold text-slate-900' : 'text-slate-500'
-                      }`}>
-                        {lesson.title}
-                      </p>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                        {lesson.duration}
-                      </p>
-                    </div>
-                    
-                    {lesson.status === 'active' && (
-                      <ChevronRight className="w-4 h-4 text-blue-600" />
-                    )}
-                  </button>
-                ))}
+      {/* Course Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {courses.map((course, i) => (
+          <motion.div
+            key={course.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group"
+          >
+            <div className="h-48 relative overflow-hidden">
+              <img 
+                src={`https://picsum.photos/seed/${course.imageSeed}/600/400`} 
+                alt={course.title}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute top-4 left-4">
+                <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-slate-900 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">
+                  {course.category}
+                </span>
+              </div>
+              {course.progress !== undefined && (
+                <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-slate-200">
+                  <div 
+                    className="h-full bg-blue-600"
+                    style={{ width: `${course.progress}%` }}
+                  />
+                </div>
+              )}
+            </div>
+            <div className="p-8">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex text-amber-400">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className={`w-3 h-3 ${i < Math.floor(course.rating) ? 'fill-current' : ''}`} />
+                  ))}
+                </div>
+                <span className="text-xs font-bold text-slate-400">{course.rating} ({course.students.toLocaleString()})</span>
+              </div>
+              <h3 className="text-xl font-black text-slate-900 mb-2 group-hover:text-blue-600 transition-colors leading-tight">
+                {course.title}
+              </h3>
+              <p className="text-sm font-bold text-slate-500 mb-6">by {course.instructor}</p>
+              
+              <div className="flex items-center justify-between pt-6 border-t border-slate-50">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    <Clock className="w-3.5 h-3.5" />
+                    {course.duration}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    <Zap className="w-3.5 h-3.5" />
+                    {course.level}
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setView('curriculum')}
+                  className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Community / Help Card */}
-        <div className="bg-slate-900 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
-          <div className="relative z-10">
-            <h4 className="text-lg font-bold mb-2">Stuck on a concept?</h4>
-            <p className="text-slate-400 text-sm mb-6 leading-relaxed">Join the community discussion or ask Atlas for a quick explanation.</p>
-            <button className="w-full py-3 bg-white text-slate-900 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-slate-100 transition-colors">
-              <MessageSquare className="w-4 h-4" />
-              Open Community
-            </button>
-          </div>
-          <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-blue-600/20 blur-[60px] rounded-full" />
-        </div>
-      </aside>
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
 }

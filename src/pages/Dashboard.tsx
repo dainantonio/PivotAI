@@ -19,7 +19,7 @@ type EngineState = 'idle' | 'loading' | 'results';
 interface DashboardProps {
   careerData: CareerPath | null;
   setCareerData: (data: CareerPath | null) => void;
-  setView: (view: 'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings') => void;
+  setView: (view: 'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings' | 'job-matches') => void;
 }
 
 export default function Dashboard({ careerData, setCareerData, setView }: DashboardProps) {
@@ -321,12 +321,49 @@ export default function Dashboard({ careerData, setCareerData, setView }: Dashbo
                     Leverage your domain expertise to validate AI outputs for compliance and brand voice consistency.
                   </p>
                 </div>
-                <button className="mt-8 flex items-center gap-2 text-sm font-bold text-slate-900 hover:text-blue-600 transition-colors group">
+                <button 
+                  onClick={() => setView('curriculum')}
+                  className="mt-8 flex items-center gap-2 text-sm font-bold text-slate-900 hover:text-blue-600 transition-colors group"
+                >
                   View Path Details
                   <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
               </motion.div>
             </div>
+
+            {/* Quick Actions */}
+            <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <button 
+                onClick={() => setView('resume')}
+                className="p-8 bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-left group"
+              >
+                <div className="bg-blue-50 w-12 h-12 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                  <Zap className="w-6 h-6" />
+                </div>
+                <h4 className="text-lg font-black text-slate-900 mb-2">Optimize Resume</h4>
+                <p className="text-sm text-slate-500">Rewrite your experience for {careerData?.recommendedPivot}.</p>
+              </button>
+              <button 
+                onClick={() => setView('interview')}
+                className="p-8 bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-left group"
+              >
+                <div className="bg-purple-50 w-12 h-12 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-purple-600 group-hover:text-white transition-all">
+                  <Target className="w-6 h-6" />
+                </div>
+                <h4 className="text-lg font-black text-slate-900 mb-2">Practice Interview</h4>
+                <p className="text-sm text-slate-500">Mock technical interview with Coach Atlas.</p>
+              </button>
+              <button 
+                onClick={() => setView('job-matches')}
+                className="p-8 bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-left group"
+              >
+                <div className="bg-emerald-50 w-12 h-12 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                  <Sparkles className="w-6 h-6" />
+                </div>
+                <h4 className="text-lg font-black text-slate-900 mb-2">Explore Jobs</h4>
+                <p className="text-sm text-slate-500">View AI-curated job matches for your pivot.</p>
+              </button>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

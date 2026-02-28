@@ -21,8 +21,8 @@ import { motion, AnimatePresence } from 'motion/react';
 
 interface AppShellProps {
   children: React.ReactNode;
-  currentView: 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings';
-  setView: (view: 'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings') => void;
+  currentView: 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings' | 'job-matches';
+  setView: (view: 'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings' | 'job-matches') => void;
 }
 
 const NavItem = ({ 
@@ -104,6 +104,8 @@ export default function AppShell({ children, currentView, setView }: AppShellPro
                 <NavItem 
                   icon={Briefcase} 
                   label="Job Matches" 
+                  isActive={currentView === 'job-matches'} 
+                  onClick={() => { setView('job-matches'); setIsSidebarOpen(false); }}
                 />
                 <NavItem 
                   icon={Users} 

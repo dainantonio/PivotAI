@@ -147,10 +147,27 @@ export default function ResumeOptimizer({ careerData }: ResumeOptimizerProps) {
               >
                 {isShared ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
               </button>
-              <button className="p-2 text-slate-400 hover:text-blue-600 transition-colors bg-slate-50 rounded-lg">
+              <button 
+                onClick={() => {
+                  if (optimizedData) {
+                    const text = optimizedData.optimizedBullets.join('\n');
+                    navigator.clipboard.writeText(text);
+                    setIsShared(true);
+                    setTimeout(() => setIsShared(false), 2000);
+                  }
+                }}
+                className="p-2 text-slate-400 hover:text-blue-600 transition-colors bg-slate-50 rounded-lg"
+                title="Copy to Clipboard"
+              >
                 <Copy className="w-4 h-4" />
               </button>
-              <button className="p-2 text-slate-400 hover:text-blue-600 transition-colors bg-slate-50 rounded-lg">
+              <button 
+                onClick={() => {
+                  alert("Downloading optimized resume as PDF...");
+                }}
+                className="p-2 text-slate-400 hover:text-blue-600 transition-colors bg-slate-50 rounded-lg"
+                title="Download PDF"
+              >
                 <Download className="w-4 h-4" />
               </button>
             </div>

@@ -31,8 +31,68 @@ interface Contributor {
   rank: number;
 }
 
+interface Post {
+  id: string;
+  author: string;
+  avatar: string;
+  title: string;
+  content: string;
+  tags: string[];
+  likes: number;
+  replies: number;
+  time: string;
+}
+
 export default function CommunityNetwork() {
   const [activeTab, setActiveTab] = useState<'mentors' | 'discussion' | 'events'>('mentors');
+  const [posts, setPosts] = useState<Post[]>([
+    {
+      id: '1',
+      author: 'Alex Morgan',
+      avatar: 'https://i.pravatar.cc/150?u=alex',
+      title: 'How to handle hallucination in production RAG?',
+      content: 'I\'m seeing about 5% hallucination rate even with strict system prompts. What are your favorite evaluation frameworks?',
+      tags: ['RAG', 'Evaluation', 'Production'],
+      likes: 24,
+      replies: 12,
+      time: '2h ago'
+    },
+    {
+      id: '2',
+      author: 'Sarah Chen',
+      avatar: 'https://i.pravatar.cc/150?u=sarah',
+      title: 'Transitioning from Sales to AI PM',
+      content: 'Sharing my journey of how I used my negotiation skills to land a PM role at Stripe. Hint: It\'s all about the data.',
+      tags: ['Career Pivot', 'Product Management'],
+      likes: 56,
+      replies: 8,
+      time: '5h ago'
+    }
+  ]);
+
+  const [newPostContent, setNewPostContent] = useState('');
+
+  const handlePost = () => {
+    if (!newPostContent.trim()) return;
+    const newPost: Post = {
+      id: Date.now().toString(),
+      author: 'Dain Russell',
+      avatar: 'https://i.pravatar.cc/150?u=dain',
+      title: 'New Discussion',
+      content: newPostContent,
+      tags: ['General', 'Community'],
+      likes: 0,
+      replies: 0,
+      time: 'Just now'
+    };
+    setPosts([newPost, ...posts]);
+    setNewPostContent('');
+    alert("Post published successfully!");
+  };
+
+  const handleLike = (id: string) => {
+    setPosts(prev => prev.map(p => p.id === id ? { ...p, likes: p.likes + 1 } : p));
+  };
 
   const mentors: Mentor[] = [
     {
@@ -181,10 +241,16 @@ export default function CommunityNetwork() {
                     </div>
 
                     <div className="flex gap-3">
-                      <button className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-95">
+                      <button 
+                        onClick={() => alert(`Intro request sent to ${mentor.name}!`)}
+                        className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-95"
+                      >
                         Request Intro
                       </button>
-                      <button className="flex-1 bg-slate-50 text-slate-700 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-100 transition-all border border-slate-200 active:scale-95">
+                      <button 
+                        onClick={() => alert(`Viewing ${mentor.name}'s career journey...`)}
+                        className="flex-1 bg-slate-50 text-slate-700 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-100 transition-all border border-slate-200 active:scale-95"
+                      >
                         View Journey
                       </button>
                     </div>
@@ -193,18 +259,94 @@ export default function CommunityNetwork() {
               </motion.div>
             )}
 
-            {activeTab !== 'mentors' && (
+            {activeTab === 'discussion' && (
               <motion.div
-                key="placeholder"
+                key="discussion"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-6"
+              >
+                <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                  <div className="flex gap-4">
+                    <img src="https://i.pravatar.cc/150?u=me" className="w-10 h-10 rounded-xl" alt="Me" />
+                    <div className="flex-1">
+                      <textarea 
+                        value={newPostContent}
+                        onChange={(e) => setNewPostContent(e.target.value)}
+                        placeholder="Start a discussion or ask a question..."
+                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
+                        rows={3}
+                      />
+                      <div className="flex justify-end mt-3">
+                        <button 
+                          onClick={handlePost}
+                          className="bg-blue-600 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-95"
+                        >
+                          Post Discussion
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {posts.map((post) => (
+                  <div key={post.id} className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm hover:shadow-md transition-all">
+                    <div className="flex items-center gap-3 mb-6">
+                      <img src={post.avatar} alt={post.author} className="w-10 h-10 rounded-xl" />
+                      <div>
+                        <p className="text-sm font-black text-slate-900">{post.author}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{post.time}</p>
+                      </div>
+                    </div>
+                    <h3 className="text-xl font-black text-slate-900 mb-3 hover:text-blue-600 cursor-pointer transition-colors">
+                      {post.title}
+                    </h3>
+                    <p className="text-slate-600 text-sm leading-relaxed mb-6">
+                      {post.content}
+                    </p>
+                    <div className="flex items-center justify-between pt-6 border-t border-slate-50">
+                      <div className="flex gap-2">
+                        {post.tags.map(tag => (
+                          <span key={tag} className="px-2.5 py-1 bg-slate-50 text-slate-500 rounded-lg text-[10px] font-bold border border-slate-100">
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-6">
+                        <button 
+                          onClick={() => handleLike(post.id)}
+                          className="flex items-center gap-2 text-slate-400 hover:text-blue-600 transition-colors"
+                        >
+                          <Star className="w-4 h-4" />
+                          <span className="text-xs font-bold">{post.likes}</span>
+                        </button>
+                        <button 
+                          onClick={() => alert("Opening thread...")}
+                          className="flex items-center gap-2 text-slate-400 hover:text-blue-600 transition-colors"
+                        >
+                          <MessageSquare className="w-4 h-4" />
+                          <span className="text-xs font-bold">{post.replies}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </motion.div>
+            )}
+
+            {activeTab === 'events' && (
+              <motion.div
+                key="events"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="h-full flex flex-col items-center justify-center text-center p-12 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200"
               >
                 <div className="bg-white p-4 rounded-2xl shadow-sm mb-4">
-                  <Star className="w-8 h-8 text-slate-300" />
+                  <Calendar className="w-8 h-8 text-slate-300" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900">Coming Soon</h3>
-                <p className="text-slate-500 max-w-xs mt-2">We're building a vibrant space for {activeTab === 'discussion' ? 'discussions' : 'events'}. Stay tuned!</p>
+                <h3 className="text-lg font-bold text-slate-900">Upcoming Events</h3>
+                <p className="text-slate-500 max-w-xs mt-2">We're organizing webinars and networking mixers. Stay tuned!</p>
               </motion.div>
             )}
           </AnimatePresence>

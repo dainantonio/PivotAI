@@ -10,7 +10,8 @@ import {
   RotateCcw,
   MessageSquare,
   ChevronRight,
-  AlertCircle
+  AlertCircle,
+  LogOut
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { interview, CareerPath } from '../services/geminiService';
@@ -24,9 +25,10 @@ interface Message {
 
 interface InterviewSimulatorProps {
   careerData: CareerPath | null;
+  setView: (view: any) => void;
 }
 
-export default function InterviewSimulator({ careerData }: InterviewSimulatorProps) {
+export default function InterviewSimulator({ careerData, setView }: InterviewSimulatorProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -37,6 +39,7 @@ export default function InterviewSimulator({ careerData }: InterviewSimulatorPro
   const [input, setInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
+  const [showEndConfirmation, setShowEndConfirmation] = useState(false);
   const [targetRole, setTargetRole] = useState(careerData?.recommendedPivot || 'AI Prompt Engineer');
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -165,16 +168,73 @@ export default function InterviewSimulator({ careerData }: InterviewSimulatorPro
           </div>
 
           {/* Sidebar Footer */}
-          <div className="mt-auto pt-8 border-t border-white/10 flex items-center justify-between">
-            <button className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-white transition-colors">
-              <RotateCcw className="w-4 h-4" />
-              Reset Session
-            </button>
-            <button className="p-2 text-slate-400 hover:text-white transition-colors">
-              <MoreVertical className="w-5 h-5" />
+          <div className="mt-auto pt-8 border-t border-white/10 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <button 
+                onClick={() => setMessages([{
+                  id: '1',
+                  role: 'ai',
+                  content: `Hello Alex! I'm Coach Atlas. Today we're conducting a technical interview for the ${careerData?.recommendedPivot || 'AI Prompt Engineer'} position. To start, can you explain how you would optimize a prompt to reduce hallucinations in a RAG-based system?`
+                }])}
+                className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-white transition-colors"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Reset Session
+              </button>
+              <button className="p-2 text-slate-400 hover:text-white transition-colors">
+                <MoreVertical className="w-5 h-5" />
+              </button>
+            </div>
+            <button 
+              onClick={() => setShowEndConfirmation(true)}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs font-bold text-red-400 hover:bg-red-500 hover:text-white transition-all"
+            >
+              <LogOut className="w-4 h-4" />
+              End Interview
             </button>
           </div>
         </div>
+
+        {/* End Interview Confirmation Dialog */}
+        <AnimatePresence>
+          {showEndConfirmation && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-50 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-6 text-center"
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="max-w-xs"
+              >
+                <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <AlertCircle className="w-8 h-8 text-red-500" />
+                </div>
+                <h3 className="text-xl font-black text-white mb-2">End Interview?</h3>
+                <p className="text-slate-400 text-sm mb-8 leading-relaxed">
+                  Are you sure you want to end this session? Your progress in this mock interview will not be saved.
+                </p>
+                <div className="flex flex-col gap-3">
+                  <button 
+                    onClick={() => setView('dashboard')}
+                    className="w-full py-3 bg-red-500 text-white rounded-xl font-bold text-sm hover:bg-red-600 transition-colors"
+                  >
+                    Yes, End Session
+                  </button>
+                  <button 
+                    onClick={() => setShowEndConfirmation(false)}
+                    className="w-full py-3 bg-white/5 text-slate-400 rounded-xl font-bold text-sm hover:bg-white/10 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </aside>
 
       {/* Main Area: Chat Interface (2/3) */}
@@ -270,7 +330,12 @@ export default function InterviewSimulator({ careerData }: InterviewSimulatorPro
 
               <div className="flex items-center gap-2 pr-2">
                 <button 
-                  onClick={() => setIsRecording(!isRecording)}
+                  onClick={() => {
+                    if (!isRecording) {
+                      alert("Voice input activated. Speak clearly into your microphone.");
+                    }
+                    setIsRecording(!isRecording);
+                  }}
                   className={`
                     w-12 h-12 lg:w-14 lg:h-14 rounded-full flex items-center justify-center transition-all relative
                     ${isRecording 

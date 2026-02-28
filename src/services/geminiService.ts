@@ -19,6 +19,7 @@ export interface CareerPath {
   transferableSkills: string[];
   recommendedPivot: string;
   matchPercentage: number;
+  industry?: string;
   syllabus: {
     moduleTitle: string;
     skillsToLearn: string[];

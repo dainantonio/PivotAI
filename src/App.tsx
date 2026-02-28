@@ -30,11 +30,12 @@ import CurriculumPlayer from './pages/CurriculumPlayer';
 import PortfolioBuilder from './pages/PortfolioBuilder';
 import CommunityNetwork from './pages/CommunityNetwork';
 import Settings from './pages/Settings';
+import JobMatches from './pages/JobMatches';
 import Auth from './pages/Auth';
 import { CareerPath } from './services/geminiService';
 
 export default function App() {
-  const [view, setView] = useState<'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings'>('landing');
+  const [view, setView] = useState<'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings' | 'job-matches'>('landing');
   const [careerData, setCareerData] = useState<CareerPath | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -56,13 +57,14 @@ export default function App() {
     );
   }
 
-  if (view === 'dashboard' || view === 'resume' || view === 'interview' || view === 'learning' || view === 'curriculum' || view === 'portfolio' || view === 'community' || view === 'settings') {
+  if (view === 'dashboard' || view === 'resume' || view === 'interview' || view === 'learning' || view === 'curriculum' || view === 'portfolio' || view === 'community' || view === 'settings' || view === 'job-matches') {
     return (
       <AppShell currentView={view} setView={setView}>
         {view === 'dashboard' && <Dashboard careerData={careerData} setCareerData={setCareerData} setView={setView} />}
+        {view === 'job-matches' && <JobMatches careerData={careerData} />}
         {view === 'resume' && <ResumeOptimizer careerData={careerData} />}
-        {view === 'interview' && <InterviewSimulator careerData={careerData} />}
-        {view === 'learning' && <LearningHub />}
+        {view === 'interview' && <InterviewSimulator careerData={careerData} setView={setView} />}
+        {view === 'learning' && <LearningHub setView={setView} />}
         {view === 'curriculum' && <CurriculumPlayer careerData={careerData} />}
         {view === 'portfolio' && <PortfolioBuilder />}
         {view === 'community' && <CommunityNetwork />}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Plus, 
   Eye, 
@@ -8,9 +8,12 @@ import {
   Cpu, 
   Globe,
   Clock,
-  MoreHorizontal
+  MoreHorizontal,
+  X,
+  Upload,
+  Sparkles
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface Project {
   id: string;
@@ -23,7 +26,8 @@ interface Project {
 }
 
 export default function PortfolioBuilder() {
-  const projects: Project[] = [
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([
     {
       id: '1',
       title: 'Automated Customer Support Agent',
@@ -51,7 +55,29 @@ export default function PortfolioBuilder() {
       views: 0,
       imageSeed: 'content'
     }
-  ];
+  ]);
+
+  const [newProject, setNewProject] = useState({
+    title: '',
+    description: '',
+    techStack: '',
+    status: 'draft' as const
+  });
+
+  const handleAddProject = () => {
+    const project: Project = {
+      id: Math.random().toString(36).substr(2, 9),
+      title: newProject.title,
+      description: newProject.description,
+      techStack: newProject.techStack.split(',').map(s => s.trim()),
+      status: newProject.status,
+      views: 0,
+      imageSeed: newProject.title.toLowerCase().replace(/\s+/g, '-')
+    };
+    setProjects([project, ...projects]);
+    setIsModalOpen(false);
+    setNewProject({ title: '', description: '', techStack: '', status: 'draft' });
+  };
 
   const stats = [
     { label: 'Total Views', value: '1,204', icon: Eye },
@@ -67,11 +93,132 @@ export default function PortfolioBuilder() {
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">My AI Portfolio</h1>
           <p className="text-slate-500 mt-1">Showcase your AI engineering prowess to potential employers.</p>
         </div>
-        <button className="flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95 w-fit">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95 w-fit"
+        >
           <Plus className="w-5 h-5" />
           Add New Project
         </button>
       </div>
+
+      {/* Add Project Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsModalOpen(false)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden"
+            >
+              <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="bg-blue-600 p-2 rounded-xl">
+                    <Sparkles className="w-5 h-5 text-white fill-current" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-black text-slate-900">Add New AI Project</h2>
+                    <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Showcase your latest work</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-400"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="p-8 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Project Title</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Multi-Agent RAG System"
+                      value={newProject.title}
+                      onChange={(e) => setNewProject({...newProject, title: e.target.value})}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Tech Stack (comma separated)</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. LangChain, Python, React"
+                      value={newProject.techStack}
+                      onChange={(e) => setNewProject({...newProject, techStack: e.target.value})}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Description</label>
+                  <textarea 
+                    rows={4}
+                    placeholder="Describe the problem you solved and the AI architecture you used..."
+                    value={newProject.description}
+                    onChange={(e) => setNewProject({...newProject, description: e.target.value})}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
+                  />
+                </div>
+
+                <div className="flex items-center gap-6">
+                  <div className="flex-1 space-y-2">
+                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Status</label>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => setNewProject({...newProject, status: 'draft'})}
+                        className={`flex-1 py-3 rounded-xl text-xs font-bold border transition-all ${newProject.status === 'draft' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}
+                      >
+                        Draft
+                      </button>
+                      <button 
+                        onClick={() => setNewProject({...newProject, status: 'live'})}
+                        className={`flex-1 py-3 rounded-xl text-xs font-bold border transition-all ${newProject.status === 'live' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}
+                      >
+                        Live
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Cover Image</label>
+                    <button className="w-full flex items-center justify-center gap-2 py-3 bg-slate-50 border border-slate-200 border-dashed rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100 transition-all">
+                      <Upload className="w-4 h-4" />
+                      Upload Screenshot
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button 
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-6 py-3 text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleAddProject}
+                  disabled={!newProject.title || !newProject.description}
+                  className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Publish Project
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -191,6 +338,7 @@ export default function PortfolioBuilder() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
+          onClick={() => setIsModalOpen(true)}
           className="bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200 p-8 flex flex-col items-center justify-center text-center group hover:bg-white hover:border-blue-300 transition-all duration-300 min-h-[400px]"
         >
           <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">

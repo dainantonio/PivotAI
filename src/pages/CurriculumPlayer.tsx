@@ -265,7 +265,17 @@ export default function CurriculumPlayer({ careerData }: CurriculumPlayerProps) 
         </div>
 
         <div className="p-6 bg-slate-50 border-t border-slate-100">
-          <button className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-sm hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 active:scale-95 flex items-center justify-center gap-2">
+          <button 
+            onClick={() => {
+              const currentIndex = lessons.findIndex(l => l.id === currentLessonId);
+              if (currentIndex < lessons.length - 1) {
+                setCurrentLessonId(lessons[currentIndex + 1].id);
+              } else {
+                alert("Congratulations! You've completed the curriculum.");
+              }
+            }}
+            className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-sm hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 active:scale-95 flex items-center justify-center gap-2"
+          >
             Next Lesson
             <ChevronRight className="w-4 h-4" />
           </button>
