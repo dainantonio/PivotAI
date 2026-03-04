@@ -11,6 +11,7 @@ import {
   Bell, 
   Menu, 
   X,
+  Target,
   ChevronRight,
   LogOut,
   Sparkles,
@@ -21,8 +22,8 @@ import { motion, AnimatePresence } from 'motion/react';
 
 interface AppShellProps {
   children: React.ReactNode;
-  currentView: 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings' | 'job-matches';
-  setView: (view: 'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings' | 'job-matches') => void;
+  currentView: 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings' | 'job-matches' | 'skill-gap';
+  setView: (view: 'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings' | 'job-matches' | 'skill-gap') => void;
 }
 
 const NavItem = ({ 
@@ -100,6 +101,12 @@ export default function AppShell({ children, currentView, setView }: AppShellPro
                   label="Overview" 
                   isActive={currentView === 'dashboard'} 
                   onClick={() => { setView('dashboard'); setIsSidebarOpen(false); }}
+                />
+                <NavItem 
+                  icon={Target} 
+                  label="Skill Gap" 
+                  isActive={currentView === 'skill-gap'} 
+                  onClick={() => { setView('skill-gap'); setIsSidebarOpen(false); }}
                 />
                 <NavItem 
                   icon={Briefcase} 

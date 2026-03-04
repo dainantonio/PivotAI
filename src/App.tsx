@@ -32,10 +32,11 @@ import CommunityNetwork from './pages/CommunityNetwork';
 import Settings from './pages/Settings';
 import JobMatches from './pages/JobMatches';
 import Auth from './pages/Auth';
+import SkillGapAnalysis from './pages/SkillGapAnalysis';
 import { CareerPath } from './services/geminiService';
 
 export default function App() {
-  const [view, setView] = useState<'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings' | 'job-matches'>('landing');
+  const [view, setView] = useState<'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings' | 'job-matches' | 'skill-gap'>('landing');
   const [careerData, setCareerData] = useState<CareerPath | null>(() => {
     const saved = localStorage.getItem('pivotai_career_data');
     return saved ? JSON.parse(saved) : null;
@@ -68,7 +69,7 @@ export default function App() {
     );
   }
 
-  if (view === 'dashboard' || view === 'resume' || view === 'interview' || view === 'learning' || view === 'curriculum' || view === 'portfolio' || view === 'community' || view === 'settings' || view === 'job-matches') {
+  if (view === 'dashboard' || view === 'resume' || view === 'interview' || view === 'learning' || view === 'curriculum' || view === 'portfolio' || view === 'community' || view === 'settings' || view === 'job-matches' || view === 'skill-gap') {
     return (
       <AppShell currentView={view} setView={setView}>
         {view === 'dashboard' && <Dashboard careerData={careerData} setCareerData={setCareerData} setView={setView} />}
@@ -80,6 +81,7 @@ export default function App() {
         {view === 'portfolio' && <PortfolioBuilder careerData={careerData} />}
         {view === 'community' && <CommunityNetwork />}
         {view === 'settings' && <Settings />}
+        {view === 'skill-gap' && <SkillGapAnalysis careerData={careerData} setView={setView} />}
       </AppShell>
     );
   }

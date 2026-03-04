@@ -26,7 +26,7 @@ type EngineState = 'idle' | 'loading' | 'results';
 interface DashboardProps {
   careerData: CareerPath | null;
   setCareerData: (data: CareerPath | null) => void;
-  setView: (view: 'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings' | 'job-matches') => void;
+  setView: (view: 'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings' | 'job-matches' | 'skill-gap') => void;
 }
 
 export default function Dashboard({ careerData, setCareerData, setView }: DashboardProps) {
@@ -37,15 +37,13 @@ export default function Dashboard({ careerData, setCareerData, setView }: Dashbo
   const [industry, setIndustry] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  // Mock data for the skill gap chart
-  const skillData = careerData ? [
-    { subject: 'AI/ML', A: 20, B: 90, fullMark: 100 },
-    { subject: 'Architecture', A: 80, B: 85, fullMark: 100 },
-    { subject: 'Data Ops', A: 40, B: 75, fullMark: 100 },
-    { subject: 'Strategy', A: 90, B: 95, fullMark: 100 },
-    { subject: 'Ethics', A: 30, B: 80, fullMark: 100 },
-    { subject: 'Python', A: 50, B: 85, fullMark: 100 },
-  ] : [
+  // Transform real skillGaps data for the radar chart
+  const skillData = careerData?.skillGaps ? careerData.skillGaps.map(gap => ({
+    subject: gap.skill,
+    A: gap.currentLevel,
+    B: gap.targetLevel,
+    fullMark: 100
+  })) : [
     { subject: 'Skill 1', A: 120, B: 110, fullMark: 150 },
     { subject: 'Skill 2', A: 98, B: 130, fullMark: 150 },
     { subject: 'Skill 3', A: 86, B: 130, fullMark: 150 },
@@ -332,10 +330,19 @@ export default function Dashboard({ careerData, setCareerData, setView }: Dashbo
               </motion.div>
 
               {/* Skill Gap Analysis Chart */}
-              <motion.div variants={itemVariants} className="md:col-span-2 bg-white rounded-[2rem] border border-slate-200 p-8 flex flex-col shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-                <div className="mb-4">
-                  <p className="text-slate-400 text-xs font-black uppercase tracking-[0.2em] mb-1">Skill Gap Analysis</p>
-                  <h3 className="text-xl font-black text-slate-900">Current vs. Target</h3>
+              <motion.div variants={itemVariants} className="md:col-span-2 bg-white rounded-[2rem] border border-slate-200 p-8 flex flex-col shadow-sm hover:shadow-md transition-shadow overflow-hidden group">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <p className="text-slate-400 text-xs font-black uppercase tracking-[0.2em] mb-1">Skill Gap Analysis</p>
+                    <h3 className="text-xl font-black text-slate-900">Current vs. Target</h3>
+                  </div>
+                  <button 
+                    onClick={() => setView('skill-gap')}
+                    className="text-xs font-black text-blue-600 uppercase tracking-widest hover:text-blue-700 transition-colors flex items-center gap-1"
+                  >
+                    View Details
+                    <ChevronRight className="w-3 h-3" />
+                  </button>
                 </div>
                 
                 <div className="flex-1 min-h-[250px] w-full">

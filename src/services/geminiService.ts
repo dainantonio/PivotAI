@@ -14,12 +14,21 @@ export interface InterviewResponse {
   nextQuestion: string;
 }
 
+export interface SkillGap {
+  skill: string;
+  currentLevel: number; // 0-100
+  targetLevel: number;  // 0-100
+  priority: 'High' | 'Medium' | 'Low';
+  description: string;
+}
+
 export interface CareerPath {
   displacementRisk: number;
   transferableSkills: string[];
   recommendedPivot: string;
   matchPercentage: number;
   industry?: string;
+  skillGaps: SkillGap[];
   syllabus: {
     moduleTitle: string;
     skillsToLearn: string[];
@@ -87,14 +96,14 @@ export async function interview(messages: { role: string, content: string }[], c
 }
 
 /**
- * Dynamically generates a career pivot path.
+ * Dynamically generates a career pivot path with detailed skill gap analysis.
  */
 export async function generatePath(currentRole: string, industry: string): Promise<CareerPath> {
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: `Current Role: ${currentRole}\nIndustry: ${industry}`,
     config: {
-      systemInstruction: "You are an AI Career Strategist. Calculate the user's risk of AI automation, identify 4 transferable skills, and recommend the best tech-adjacent pivot role (e.g., AI Prompt Engineer, AI Auditor). Finally, generate a 3-module learning syllabus.",
+      systemInstruction: "You are an AI Career Strategist. Calculate the user's risk of AI automation, identify 4 transferable skills, and recommend the best tech-adjacent pivot role. Perform a detailed skill gap analysis comparing their current role to the future needs of the pivot role. Finally, generate a 3-module learning syllabus.",
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
@@ -103,6 +112,22 @@ export async function generatePath(currentRole: string, industry: string): Promi
           transferableSkills: { type: Type.ARRAY, items: { type: Type.STRING }, minItems: 4, maxItems: 4 },
           recommendedPivot: { type: Type.STRING },
           matchPercentage: { type: Type.NUMBER },
+          skillGaps: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                skill: { type: Type.STRING },
+                currentLevel: { type: Type.NUMBER },
+                targetLevel: { type: Type.NUMBER },
+                priority: { type: Type.STRING, enum: ['High', 'Medium', 'Low'] },
+                description: { type: Type.STRING }
+              },
+              required: ["skill", "currentLevel", "targetLevel", "priority", "description"]
+            },
+            minItems: 5,
+            maxItems: 8
+          },
           syllabus: {
             type: Type.ARRAY,
             items: {
@@ -117,7 +142,7 @@ export async function generatePath(currentRole: string, industry: string): Promi
             maxItems: 3
           }
         },
-        required: ["displacementRisk", "transferableSkills", "recommendedPivot", "matchPercentage", "syllabus"]
+        required: ["displacementRisk", "transferableSkills", "recommendedPivot", "matchPercentage", "skillGaps", "syllabus"]
       }
     }
   });
