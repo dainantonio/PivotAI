@@ -15,6 +15,7 @@ import JobMatcher from "./pages/JobMatcher";
 import InterviewCoach from "./pages/InterviewCoach";
 import SkillAnalyst from "./pages/SkillAnalyst";
 import AgentMemory from "./pages/AgentMemory";
+import APIKeys from "./pages/APIKeys";
 
 function Router() {
   return (
@@ -30,6 +31,7 @@ function Router() {
       <Route path="/interview" component={InterviewCoach} />
       <Route path="/skills" component={SkillAnalyst} />
       <Route path="/memory" component={AgentMemory} />
+      <Route path="/settings/api-keys" component={APIKeys} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
