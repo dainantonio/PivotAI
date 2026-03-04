@@ -20,6 +20,7 @@ import {
   Loader2,
   Zap,
   Database,
+  GitBranch,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -30,6 +31,24 @@ const agentCards = [
   { href: "/skills", icon: TrendingUp, label: "Skill Analyst", color: "text-pink-400", bg: "bg-pink-400/10", border: "border-pink-400/20", desc: "Gap analysis & roadmap" },
   { href: "/jobs", icon: Briefcase, label: "Job Matcher", color: "text-blue-400", bg: "bg-blue-400/10", border: "border-blue-400/20", desc: "Opportunity matching" },
 ];
+
+const agentMeta: Record<string, { label: string; color: string; bg: string; border: string }> = {
+  orchestrator: { label: "Orchestrator", color: "#60a5fa", bg: "bg-primary/10", border: "border-primary/30" },
+  career_strategist: { label: "Career Strategist", color: "#4ade80", bg: "bg-green-400/10", border: "border-green-400/20" },
+  resume_expert: { label: "Resume Expert", color: "#a78bfa", bg: "bg-violet-400/10", border: "border-violet-400/20" },
+  interview_coach: { label: "Interview Coach", color: "#fbbf24", bg: "bg-amber-400/10", border: "border-amber-400/20" },
+  skill_analyst: { label: "Skill Analyst", color: "#f472b6", bg: "bg-pink-400/10", border: "border-pink-400/20" },
+  job_matcher: { label: "Job Matcher", color: "#60a5fa", bg: "bg-blue-400/10", border: "border-blue-400/20" },
+};
+
+const agentLayout: Record<string, { x: number; y: number }> = {
+  orchestrator: { x: 320, y: 52 },
+  career_strategist: { x: 130, y: 128 },
+  resume_expert: { x: 260, y: 128 },
+  interview_coach: { x: 385, y: 128 },
+  skill_analyst: { x: 510, y: 128 },
+  job_matcher: { x: 320, y: 214 },
+};
 
 function statusIcon(status: string) {
   switch (status) {
@@ -52,7 +71,8 @@ function statusColor(status: string) {
 }
 
 export default function Dashboard() {
-  const { data: sessions, isLoading: sessionsLoading } = trpc.agent.listSessions.useQuery({ limit: 5 });
+  const { data: sessions, isLoading: sessionsLoading } = trpc.agent.listSessions.useQuery({ limit: 5 }, { refetchInterval: 5000 });
+  const { data: taskQueue, isLoading: tasksLoading } = trpc.agent.getTaskQueue.useQuery({ limit: 40 }, { refetchInterval: 4000 });
   const { data: profile } = trpc.career.getProfile.useQuery();
   const { data: memory } = trpc.agent.getMemory.useQuery({ limit: 5 });
   const { data: jobs } = trpc.jobs.getMatches.useQuery({ limit: 3 });
@@ -61,6 +81,38 @@ export default function Dashboard() {
   const totalSessions = sessions?.length ?? 0;
   const completedSessions = sessions?.filter((s) => s.status === "completed").length ?? 0;
   const activeSessions = sessions?.filter((s) => s.status === "executing" || s.status === "planning").length ?? 0;
+
+  const visibleTasks = (taskQueue ?? []).slice(0, 24);
+  const taskById = new Map(visibleTasks.map((task) => [task.id, task]));
+
+  const collaborationEdges = new Map<string, { from: string; to: string; count: number }>();
+  for (const task of visibleTasks) {
+    const deps = (task.dependsOn as string[] | null | undefined) ?? [];
+    for (const depId of deps) {
+      const parent = taskById.get(depId);
+      if (!parent || parent.agentType === task.agentType) continue;
+      const key = `${parent.agentType}->${task.agentType}`;
+      const existing = collaborationEdges.get(key);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        collaborationEdges.set(key, { from: parent.agentType, to: task.agentType, count: 1 });
+      }
+    }
+  }
+
+  const agentActivity = Object.keys(agentMeta).map((agentType) => {
+    const tasks = visibleTasks.filter((task) => task.agentType === agentType);
+    return {
+      agentType,
+      running: tasks.filter((task) => task.status === "running").length,
+      completed: tasks.filter((task) => task.status === "completed").length,
+      queued: tasks.filter((task) => task.status === "queued").length,
+      total: tasks.length,
+    };
+  });
+
+  const hasGraphData = visibleTasks.length > 0;
 
   return (
     <AgentLayout title="Dashboard" subtitle="Your AI agent command overview">
@@ -91,6 +143,117 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Sessions */}
           <div className="lg:col-span-2 space-y-4">
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-2 pt-4 px-4">
+                <CardTitle className="text-sm font-semibold text-foreground flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <GitBranch className="w-4 h-4 text-primary" />
+                    Real-time Agent Collaboration Graph
+                  </span>
+                  <Badge variant="outline" className="text-[10px] border-primary/20 bg-primary/10 text-primary">
+                    live
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 pb-4 space-y-3">
+                {tasksLoading ? (
+                  <div className="h-56 rounded-lg bg-secondary/40 animate-pulse" />
+                ) : hasGraphData ? (
+                  <>
+                    <div className="rounded-lg border border-border bg-secondary/20 p-2 overflow-x-auto">
+                      <svg viewBox="0 0 640 260" className="w-full min-w-[620px] h-[260px]">
+                        {[...collaborationEdges.values()].map((edge) => {
+                          const from = agentLayout[edge.from];
+                          const to = agentLayout[edge.to];
+                          if (!from || !to) return null;
+                          return (
+                            <g key={`${edge.from}-${edge.to}`}>
+                              <line
+                                x1={from.x}
+                                y1={from.y + 18}
+                                x2={to.x}
+                                y2={to.y - 18}
+                                stroke="rgba(148,163,184,0.45)"
+                                strokeWidth={Math.min(4, 1 + edge.count)}
+                                strokeDasharray="4 4"
+                              />
+                              <text
+                                x={(from.x + to.x) / 2}
+                                y={(from.y + to.y) / 2 - 4}
+                                fill="rgba(148,163,184,0.9)"
+                                fontSize="10"
+                                textAnchor="middle"
+                              >
+                                {edge.count}
+                              </text>
+                            </g>
+                          );
+                        })}
+
+                        {agentActivity.map((node) => {
+                          const layout = agentLayout[node.agentType];
+                          if (!layout) return null;
+                          const meta = agentMeta[node.agentType];
+                          const isActive = node.running > 0;
+                          return (
+                            <g key={node.agentType}>
+                              {isActive && (
+                                <circle
+                                  cx={layout.x}
+                                  cy={layout.y}
+                                  r={24}
+                                  fill={meta.color}
+                                  opacity="0.18"
+                                  className="animate-pulse"
+                                />
+                              )}
+                              <circle
+                                cx={layout.x}
+                                cy={layout.y}
+                                r={18}
+                                fill="rgba(15,23,42,0.95)"
+                                stroke={meta.color}
+                                strokeWidth="2"
+                              />
+                              <text x={layout.x} y={layout.y + 3} fill={meta.color} fontSize="10" textAnchor="middle" fontWeight="700">
+                                {meta.label.split(" ").map((part) => part[0]).join("").slice(0, 2)}
+                              </text>
+                              <text x={layout.x} y={layout.y + 34} fill="rgba(203,213,225,0.95)" fontSize="10" textAnchor="middle">
+                                {meta.label}
+                              </text>
+                              <text x={layout.x} y={layout.y + 46} fill="rgba(148,163,184,0.95)" fontSize="9" textAnchor="middle">
+                                {node.running > 0 ? `${node.running} active` : `${node.completed} done`}
+                              </text>
+                            </g>
+                          );
+                        })}
+                      </svg>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {agentActivity.filter((agent) => agent.total > 0).map((agent) => {
+                        const meta = agentMeta[agent.agentType];
+                        return (
+                          <div key={agent.agentType} className={`rounded-lg border ${meta.border} ${meta.bg} px-2.5 py-2`}>
+                            <p className="text-[10px] text-foreground font-medium truncate">{meta.label}</p>
+                            <p className="text-[10px] text-muted-foreground">
+                              {agent.running} running · {agent.completed} completed · {agent.queued} queued
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      Dependency links are inferred from task `dependsOn` relationships across agents and refresh every few seconds.
+                    </p>
+                  </>
+                ) : (
+                  <div className="text-center p-8 rounded-lg border border-dashed border-border">
+                    <p className="text-xs text-muted-foreground">No agent task dependencies available yet. Start a new session to populate the collaboration graph.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-foreground">Recent Agent Sessions</h2>
               <Link href="/agent">

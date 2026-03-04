@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Markdown } from "@/components/Markdown";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { Link } from "wouter";
 import {
@@ -53,6 +53,17 @@ export default function AgentCommandCenter() {
   const [inputValue, setInputValue] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const utils = trpc.useUtils();
+  const hasAutoStartedRef = useRef(false);
+
+  const queryConfig = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    const params = new URLSearchParams(window.location.search);
+    return {
+      agent: params.get("agent"),
+      prompt: params.get("prompt"),
+      autostart: params.get("autostart") === "1",
+    };
+  }, []);
 
   const { data: sessions } = trpc.agent.listSessions.useQuery({ limit: 10 });
 
@@ -79,6 +90,28 @@ export default function AgentCommandCenter() {
   });
 
   const isLoading = status === "streaming" || status === "submitted";
+
+  useEffect(() => {
+    if (!queryConfig || hasAutoStartedRef.current) return;
+
+    if (queryConfig.agent && AGENT_TYPES.some((agent) => agent.id === queryConfig.agent)) {
+      setSelectedAgent(queryConfig.agent);
+    }
+
+    if (queryConfig.prompt) {
+      setInputValue(queryConfig.prompt);
+
+      if (queryConfig.autostart && !isLoading) {
+        sendMessage({ text: queryConfig.prompt });
+        setInputValue("");
+        hasAutoStartedRef.current = true;
+
+        const url = new URL(window.location.href);
+        url.searchParams.delete("autostart");
+        window.history.replaceState({}, "", `${url.pathname}${url.search}`);
+      }
+    }
+  }, [queryConfig, isLoading, sendMessage]);
 
   // Auto-scroll to bottom
   useEffect(() => {

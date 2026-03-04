@@ -19,6 +19,7 @@ import {
   Zap,
   ChevronRight,
   Sparkles,
+  KeyRound,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -44,6 +45,7 @@ const navItems = [
     group: "System",
     items: [
       { href: "/memory", icon: Database, label: "Agent Memory", color: "text-slate-400" },
+      { href: "/settings/api-keys", icon: KeyRound, label: "API Keys", color: "text-cyan-400" },
     ],
   },
 ];
