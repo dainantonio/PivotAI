@@ -291,10 +291,10 @@ export default function CareerProfile() {
               <Button
                 size="sm"
                 className="bg-green-400/10 text-green-400 hover:bg-green-400/20 border border-green-400/20 gap-1 text-xs"
-                onClick={() => (window.location.href = "/agent")}
+                onClick={() => (window.location.href = "/career-onboarding")}
               >
                 <Brain className="w-3.5 h-3.5" />
-                Launch Career Strategist
+                Start Onboarding Wizard
               </Button>
             </div>
           </div>
