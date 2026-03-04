@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import AgentCommandCenter from "./pages/AgentCommandCenter";
 import AgentSession from "./pages/AgentSession";
 import CareerProfile from "./pages/CareerProfile";
+import CareerOnboardingWizard from "./pages/CareerOnboardingWizard";
 import ResumeExpert from "./pages/ResumeExpert";
 import JobMatcher from "./pages/JobMatcher";
 import InterviewCoach from "./pages/InterviewCoach";
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/agent" component={AgentCommandCenter} />
       <Route path="/agent/session/:sessionId" component={AgentSession} />
       <Route path="/career-profile" component={CareerProfile} />
+      <Route path="/career-onboarding" component={CareerOnboardingWizard} />
       <Route path="/resume" component={ResumeExpert} />
       <Route path="/jobs" component={JobMatcher} />
       <Route path="/interview" component={InterviewCoach} />
