@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BookOpen, 
   Play, 
@@ -10,63 +10,55 @@ import {
   ArrowRight,
   MonitorPlay,
   Hammer,
-  Trophy
+  Trophy,
+  Loader2
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { aiService, ParsedProfile, RoleMatch, UpskillRecommendation } from '../services/aiService';
 
 interface UpskillPlanProps {
+  profile: ParsedProfile | null;
+  targetRole: RoleMatch | null;
   onNext: () => void;
   onBack: () => void;
 }
 
-export default function UpskillPlan({ onNext, onBack }: UpskillPlanProps) {
-  const courses = [
-    {
-      id: 'c1',
-      title: 'AI Product Management Foundations',
-      platform: 'Coursera',
-      duration: '12 Hours',
-      type: 'Free',
-      icon: <MonitorPlay className="w-6 h-6" />
-    },
-    {
-      id: 'c2',
-      title: 'Generative AI for Business Leaders',
-      platform: 'LinkedIn Learning',
-      duration: '4 Hours',
-      type: 'Paid',
-      icon: <Play className="w-6 h-6" />
-    },
-    {
-      id: 'c3',
-      title: 'Ethical AI & Governance',
-      platform: 'edX',
-      duration: '8 Hours',
-      type: 'Free',
-      icon: <BookOpen className="w-6 h-6" />
-    }
-  ];
+export default function UpskillPlan({ profile, targetRole, onNext, onBack }: UpskillPlanProps) {
+  const [upskillData, setUpskillData] = useState<UpskillRecommendation | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const projects = [
-    {
-      id: 'p1',
-      name: 'AI Strategy Roadmap for E-commerce',
-      description: 'Develop a comprehensive AI implementation strategy for a retail platform, focusing on recommendation engines and inventory optimization.',
-      skills: ['Strategy', 'E-commerce', 'ROI Analysis']
-    },
-    {
-      id: 'p2',
-      name: 'LLM Prompt Engineering Framework',
-      description: 'Create a standardized prompt engineering library for customer support automation using GPT-4 and Claude.',
-      skills: ['Prompt Engineering', 'NLP', 'Automation']
+  useEffect(() => {
+    if (profile && targetRole) {
+      handleGenerateUpskills();
     }
-  ];
+  }, [profile, targetRole]);
 
-  const certificates = [
-    { id: 'cert1', name: 'Professional AI Product Strategist', progress: 65 },
-    { id: 'cert2', name: 'Machine Learning for Non-Techies', progress: 30 },
-    { id: 'cert3', name: 'Data Privacy & AI Ethics', progress: 90 }
-  ];
+  const handleGenerateUpskills = async () => {
+    if (!profile || !targetRole) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      // Use missing skills from profile if available, otherwise just use target role
+      const result = await aiService.generateUpskills([], targetRole.role);
+      setUpskillData(result);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to generate upskill plan. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-6xl mx-auto py-24 px-4 flex flex-col items-center justify-center text-slate-400">
+        <Loader2 className="w-16 h-16 animate-spin mb-6" />
+        <h2 className="text-2xl font-black text-slate-900 mb-2">Curating Your Learning Path</h2>
+        <p>Finding the best courses and projects for {targetRole?.role}...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto py-12 px-4">
@@ -89,9 +81,9 @@ export default function UpskillPlan({ onNext, onBack }: UpskillPlanProps) {
               <h2 className="text-2xl font-black text-slate-900">Recommended Courses</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {courses.map((course, index) => (
+              {upskillData?.courses.map((course, index) => (
                 <motion.div
-                  key={course.id}
+                  key={index}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
@@ -99,12 +91,12 @@ export default function UpskillPlan({ onNext, onBack }: UpskillPlanProps) {
                 >
                   <div className="flex justify-between items-start mb-4">
                     <div className="p-3 bg-slate-50 text-slate-400 rounded-2xl group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
-                      {course.icon}
+                      <MonitorPlay className="w-6 h-6" />
                     </div>
                     <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                      course.type === 'Free' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                      course.isFree ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
                     }`}>
-                      {course.type}
+                      {course.isFree ? 'Free' : 'Paid'}
                     </span>
                   </div>
                   <h3 className="text-lg font-black text-slate-900 mb-1 leading-tight">{course.title}</h3>
@@ -133,9 +125,9 @@ export default function UpskillPlan({ onNext, onBack }: UpskillPlanProps) {
               <h2 className="text-2xl font-black text-slate-900">Hands-on Projects</h2>
             </div>
             <div className="space-y-4">
-              {projects.map((project, index) => (
+              {upskillData?.projects.map((project, index) => (
                 <motion.div
-                  key={project.id}
+                  key={index}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 + index * 0.1 }}
@@ -146,7 +138,7 @@ export default function UpskillPlan({ onNext, onBack }: UpskillPlanProps) {
                       <h3 className="text-xl font-black text-slate-900 mb-2">{project.name}</h3>
                       <p className="text-slate-500 text-sm leading-relaxed mb-4">{project.description}</p>
                       <div className="flex flex-wrap gap-2">
-                        {project.skills.map(skill => (
+                        {['AI Strategy', 'Implementation', 'ROI'].map(skill => (
                           <span key={skill} className="px-3 py-1 bg-slate-50 text-slate-500 text-[10px] font-bold rounded-lg border border-slate-100">
                             {skill}
                           </span>
@@ -175,8 +167,8 @@ export default function UpskillPlan({ onNext, onBack }: UpskillPlanProps) {
             </div>
 
             <div className="space-y-8">
-              {certificates.map((cert, index) => (
-                <div key={cert.id} className="space-y-3">
+              {upskillData?.certificates.map((cert, index) => (
+                <div key={index} className="space-y-3">
                   <div className="flex justify-between items-end">
                     <h4 className="text-sm font-bold text-slate-300 max-w-[180px] leading-tight">{cert.name}</h4>
                     <span className="text-indigo-400 font-black text-xs">{cert.progress}%</span>
@@ -189,12 +181,6 @@ export default function UpskillPlan({ onNext, onBack }: UpskillPlanProps) {
                       className="h-full bg-indigo-500 rounded-full"
                     />
                   </div>
-                  {cert.progress === 100 && (
-                    <div className="flex items-center gap-1.5 text-emerald-400 text-[10px] font-black uppercase tracking-widest">
-                      <CheckCircle2 className="w-3 h-3" />
-                      Completed
-                    </div>
-                  )}
                 </div>
               ))}
             </div>

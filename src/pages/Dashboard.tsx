@@ -9,7 +9,15 @@ import {
   Sparkles,
   ShieldAlert,
   Target,
-  ChevronRight
+  ChevronRight,
+  Trophy,
+  Flame,
+  MessageSquare,
+  Bell,
+  Briefcase,
+  Send,
+  User,
+  Bot
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -19,23 +27,54 @@ import {
   PolarAngleAxis, 
   ResponsiveContainer 
 } from 'recharts';
-import { generatePath, CareerPath } from '../services/geminiService';
+import { aiService, CareerPath, ParsedProfile, RoleMatch } from '../services/aiService';
 
 type EngineState = 'idle' | 'loading' | 'results';
 
 interface DashboardProps {
   careerData: CareerPath | null;
+  userProfile: ParsedProfile | null;
+  roleMatches: RoleMatch[];
+  selectedRole: RoleMatch | null;
   setCareerData: (data: CareerPath | null) => void;
   setView: (view: 'landing' | 'auth' | 'dashboard' | 'experience' | 'matching' | 'gap-analysis' | 'upskill' | 'resume-portfolio' | 'settings') => void;
 }
 
-export default function Dashboard({ careerData, setCareerData, setView }: DashboardProps) {
-  const [state, setState] = useState<EngineState>(careerData ? 'results' : 'idle');
+export default function Dashboard({ careerData, userProfile, roleMatches, selectedRole, setCareerData, setView }: DashboardProps) {
+  const [state, setState] = useState<EngineState>(userProfile ? 'results' : 'idle');
   const [loadingText, setLoadingText] = useState('');
   const [progress, setProgress] = useState(0);
   const [currentRole, setCurrentRole] = useState('');
   const [industry, setIndustry] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [chatMessage, setChatMessage] = useState('');
+
+  // Mock Gamification Data
+  const gamification = {
+    points: 1250,
+    streak: 5,
+    badges: [
+      { id: 1, name: 'AI Pioneer', icon: <Sparkles className="w-4 h-4" />, color: 'bg-indigo-100 text-indigo-600' },
+      { id: 2, name: 'Fast Learner', icon: <Zap className="w-4 h-4" />, color: 'bg-amber-100 text-amber-600' },
+      { id: 3, name: 'Strategist', icon: <Target className="w-4 h-4" />, color: 'bg-emerald-100 text-emerald-600' },
+    ]
+  };
+
+  // Mock Job Alerts
+  const jobAlerts = [
+    { id: 1, title: 'AI Product Strategist', company: 'NeuralSoft', match: 98, location: 'Remote', salary: '$140k - $180k' },
+    { id: 2, title: 'Technical Product Manager', company: 'OpenAI (Mock)', match: 92, location: 'San Francisco', salary: '$160k - $210k' },
+    { id: 3, title: 'AI Operations Lead', company: 'FutureScale', match: 85, location: 'Hybrid', salary: '$130k - $165k' },
+  ];
+
+  const careerSteps = [
+    { id: 'profile', label: 'Profile', status: 'complete' },
+    { id: 'matching', label: 'Role Match', status: 'complete' },
+    { id: 'gap', label: 'Gap Analysis', status: 'current' },
+    { id: 'upskill', label: 'Upskilling', status: 'pending' },
+    { id: 'portfolio', label: 'Portfolio', status: 'pending' },
+    { id: 'ready', label: 'Job Ready', status: 'pending' },
+  ];
 
   // Transform real skillGaps data for the radar chart
   const skillData = careerData?.skillGaps ? careerData.skillGaps.map(gap => ({
@@ -44,12 +83,12 @@ export default function Dashboard({ careerData, setCareerData, setView }: Dashbo
     B: gap.targetLevel,
     fullMark: 100
   })) : [
-    { subject: 'Skill 1', A: 120, B: 110, fullMark: 150 },
-    { subject: 'Skill 2', A: 98, B: 130, fullMark: 150 },
-    { subject: 'Skill 3', A: 86, B: 130, fullMark: 150 },
-    { subject: 'Skill 4', A: 99, B: 100, fullMark: 150 },
-    { subject: 'Skill 5', A: 85, B: 90, fullMark: 150 },
-    { subject: 'Skill 6', A: 65, B: 85, fullMark: 150 },
+    { subject: 'AI Strategy', A: 80, B: 100, fullMark: 100 },
+    { subject: 'LLM Ops', A: 40, B: 90, fullMark: 100 },
+    { subject: 'Prompt Eng', A: 90, B: 95, fullMark: 100 },
+    { subject: 'Data Ethics', A: 70, B: 85, fullMark: 100 },
+    { subject: 'Product Mgmt', A: 95, B: 95, fullMark: 100 },
+    { subject: 'Python', A: 30, B: 75, fullMark: 100 },
   ];
 
   const loadingSteps = [
@@ -59,27 +98,6 @@ export default function Dashboard({ careerData, setCareerData, setView }: Dashbo
     "Calculating displacement probability...",
     "Finalizing pivot recommendations..."
   ];
-
-  const handleAnalyze = async () => {
-    if (!currentRole.trim() || !industry.trim()) return;
-    
-    setState('loading');
-    setProgress(0);
-    setError(null);
-
-    try {
-      // Start the API call in parallel with the loading animation
-      const dataPromise = generatePath(currentRole, industry);
-      
-      // We'll let the animation run for a bit even if the API is fast for "thematic" effect
-      const data = await dataPromise;
-      setCareerData(data);
-    } catch (err) {
-      console.error(err);
-      setError("Failed to generate career path. Please check your API key and try again.");
-      setState('idle');
-    }
-  };
 
   useEffect(() => {
     if (state === 'loading') {
@@ -134,7 +152,7 @@ export default function Dashboard({ careerData, setCareerData, setView }: Dashbo
   };
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-7xl mx-auto px-4 py-8">
       <AnimatePresence mode="wait">
         {state === 'idle' && (
           <motion.div
@@ -146,15 +164,15 @@ export default function Dashboard({ careerData, setCareerData, setView }: Dashbo
             className="flex flex-col items-center justify-center min-h-[60vh]"
           >
             <div className="bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/50 max-w-xl w-full text-center">
-              <div className="bg-blue-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-8">
-                <ShieldAlert className="w-8 h-8 text-blue-600" />
+              <div className="bg-indigo-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-8">
+                <ShieldAlert className="w-8 h-8 text-indigo-600" />
               </div>
               <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">Bridge your AI Career</h2>
               <p className="text-slate-500 mb-10">Start your journey by building your experience profile and discovering your optimal career pivot.</p>
               
               <button 
                 onClick={() => setView('experience')}
-                className="w-full bg-blue-600 text-white py-5 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-[0.98]"
+                className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-[0.98]"
               >
                 Start Career Bridge
               </button>
@@ -172,15 +190,15 @@ export default function Dashboard({ careerData, setCareerData, setView }: Dashbo
             className="flex flex-col items-center justify-center min-h-[60vh] text-center"
           >
             <div className="relative mb-12">
-              <div className="absolute inset-0 bg-blue-400/20 blur-3xl rounded-full animate-pulse" />
-              <Loader2 className="w-20 h-20 text-blue-600 animate-spin relative z-10" />
+              <div className="absolute inset-0 bg-indigo-400/20 blur-3xl rounded-full animate-pulse" />
+              <Loader2 className="w-20 h-20 text-indigo-600 animate-spin relative z-10" />
             </div>
             
             <div className="max-w-md w-full">
               <p className="text-xl font-bold text-slate-900 mb-6 h-8">{loadingText}</p>
               <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden mb-4">
                 <motion.div 
-                  className="h-full bg-blue-600"
+                  className="h-full bg-indigo-600"
                   initial={{ width: 0 }}
                   animate={{ width: `${progress}%` }}
                 />
@@ -197,195 +215,275 @@ export default function Dashboard({ careerData, setCareerData, setView }: Dashbo
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="space-y-8 py-4"
+            className="space-y-8"
           >
-            <motion.div variants={itemVariants} className="flex items-center justify-between mb-2">
-              <h2 className="text-3xl font-black text-slate-900 tracking-tight">Risk Assessment Report</h2>
-              <button 
-                onClick={() => setState('idle')}
-                className="text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors"
-              >
-                Reset Analysis
-              </button>
-            </motion.div>
-
-            {/* Top Row Bento Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Displacement Risk */}
-              <motion.div variants={itemVariants} className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-4">
-                  <div className="bg-red-50 text-red-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
-                    <AlertTriangle className="w-3 h-3" />
-                    High Exposure
+            {/* Comprehensive Career Progress Bar */}
+            <motion.div variants={itemVariants} className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+                <div>
+                  <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-1">Career Control Center</h2>
+                  <p className="text-slate-500 font-medium">Targeting: <span className="text-indigo-600 font-bold">{selectedRole?.role || 'AI Product Strategist'}</span></p>
+                </div>
+                <div className="flex items-center gap-6">
+                  <div className="text-right">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Overall Readiness</p>
+                    <p className="text-2xl font-black text-slate-900">68%</p>
+                  </div>
+                  <div className="w-32 h-3 bg-slate-100 rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: '68%' }}
+                      className="h-full bg-indigo-600 rounded-full"
+                    />
                   </div>
                 </div>
-                <p className="text-slate-500 text-sm font-bold uppercase tracking-widest mb-4">Displacement Risk</p>
-                <h3 className="text-7xl font-black text-slate-900 mb-4">{careerData?.displacementRisk}%</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  Your core tasks in <span className="font-bold text-slate-900">{currentRole}</span> within the <span className="font-bold text-slate-900">{industry}</span> sector are susceptible to automation.
-                </p>
-              </motion.div>
+              </div>
 
-              {/* Transferable Assets */}
-              <motion.div variants={itemVariants} className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
-                <p className="text-slate-500 text-sm font-bold uppercase tracking-widest mb-4">Transferable Assets</p>
-                <div className="flex items-baseline gap-2 mb-6">
-                  <h3 className="text-7xl font-black text-slate-900">{careerData?.transferableSkills.length}</h3>
-                  <span className="text-slate-400 font-bold">Core Pillars</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {careerData?.transferableSkills.map(tag => (
-                    <span key={tag} className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-xl text-xs font-bold border border-blue-100">
-                      {tag}
-                    </span>
+              {/* Step Progress */}
+              <div className="relative">
+                <div className="absolute top-5 left-0 w-full h-0.5 bg-slate-100 -z-0" />
+                <div className="flex justify-between relative z-10">
+                  {careerSteps.map((step, idx) => (
+                    <div key={step.id} className="flex flex-col items-center">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center border-4 transition-all duration-500 ${
+                        step.status === 'complete' ? 'bg-indigo-600 border-indigo-100 text-white' :
+                        step.status === 'current' ? 'bg-white border-indigo-600 text-indigo-600 shadow-lg shadow-indigo-100' :
+                        'bg-white border-slate-100 text-slate-300'
+                      }`}>
+                        {step.status === 'complete' ? <CheckCircle2 className="w-5 h-5" /> : <span className="text-sm font-bold">{idx + 1}</span>}
+                      </div>
+                      <span className={`mt-3 text-[10px] font-black uppercase tracking-widest ${
+                        step.status === 'pending' ? 'text-slate-400' : 'text-slate-900'
+                      }`}>{step.label}</span>
+                    </div>
                   ))}
                 </div>
-              </motion.div>
+              </div>
+            </motion.div>
 
-              {/* Pivot Timeline */}
-              <motion.div variants={itemVariants} className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            {/* Gamification Bento Grid */}
+            <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
+                  <Trophy className="w-6 h-6" />
+                </div>
                 <div>
-                  <p className="text-slate-500 text-sm font-bold uppercase tracking-widest mb-4">Pivot Timeline</p>
-                  <h3 className="text-5xl font-black text-slate-900 mb-2">12 Weeks</h3>
-                  <p className="text-sm text-slate-600">Estimated time to reach proficiency in recommended pivot paths.</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Points</p>
+                  <p className="text-2xl font-black text-slate-900">{gamification.points}</p>
                 </div>
-                <div className="mt-6 flex items-center gap-2 text-emerald-600 font-bold text-sm">
-                  <Clock className="w-4 h-4" />
-                  Accelerated Path Available
+              </div>
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div className="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-500">
+                  <Flame className="w-6 h-6" />
                 </div>
-              </motion.div>
-            </div>
+                <div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Day Streak</p>
+                  <p className="text-2xl font-black text-slate-900">{gamification.streak}</p>
+                </div>
+              </div>
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
+                  <Target className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tasks Done</p>
+                  <p className="text-2xl font-black text-slate-900">12/18</p>
+                </div>
+              </div>
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
+                  <Zap className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Level</p>
+                  <p className="text-2xl font-black text-slate-900">Elite</p>
+                </div>
+              </div>
+            </motion.div>
 
-            {/* Bottom Row - Pivot Paths */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-              {/* Primary Path */}
-              <motion.div variants={itemVariants} className="md:col-span-3 bg-slate-900 rounded-[2rem] p-10 text-white relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-8">
-                  <div className="bg-blue-500 text-white px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-blue-500/20">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    {careerData?.matchPercentage}% Match
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Left Column: Analysis & Jobs */}
+              <div className="lg:col-span-2 space-y-8">
+                {/* Skill Gap Analysis */}
+                <motion.div variants={itemVariants} className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                  <div className="flex justify-between items-center mb-8">
+                    <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                      <Target className="w-5 h-5 text-indigo-600" />
+                      Skill Gap Analysis
+                    </h3>
+                    <button 
+                      onClick={() => setView('gap-analysis')}
+                      className="text-xs font-black text-indigo-600 uppercase tracking-widest hover:text-indigo-700 transition-colors"
+                    >
+                      Full Report
+                    </button>
                   </div>
-                </div>
-                
-                <div className="relative z-10">
-                  <p className="text-blue-400 text-xs font-black uppercase tracking-[0.2em] mb-4">Recommended Pivot</p>
-                  <h3 className="text-4xl font-black mb-8">{careerData?.recommendedPivot}</h3>
-                  
-                  <div className="space-y-4 mb-10">
-                    <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">Learning Syllabus</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {careerData?.syllabus.map(module => (
-                        <div key={module.moduleTitle} className="flex items-start gap-3">
-                          <div className="bg-emerald-500/20 p-1 rounded-full mt-0.5">
-                            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <div className="h-[300px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart cx="50%" cy="50%" outerRadius="80%" data={skillData}>
+                        <PolarGrid stroke="#e2e8f0" />
+                        <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }} />
+                        <Radar
+                          name="Current"
+                          dataKey="A"
+                          stroke="#94a3b8"
+                          fill="#94a3b8"
+                          fillOpacity={0.3}
+                        />
+                        <Radar
+                          name="Target"
+                          dataKey="B"
+                          stroke="#4f46e5"
+                          fill="#4f46e5"
+                          fillOpacity={0.5}
+                        />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </motion.div>
+
+                {/* Job Alerts */}
+                <motion.div variants={itemVariants} className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                  <div className="flex justify-between items-center mb-8">
+                    <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                      <Bell className="w-5 h-5 text-indigo-600" />
+                      Job Alerts
+                    </h3>
+                    <span className="px-3 py-1 bg-indigo-100 text-indigo-600 text-[10px] font-black uppercase tracking-widest rounded-full">3 New Matches</span>
+                  </div>
+                  <div className="space-y-4">
+                    {roleMatches.length > 0 ? roleMatches.map((job, idx) => (
+                      <div key={idx} className="p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:border-indigo-200 transition-all group">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-white rounded-2xl border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 transition-colors">
+                              <Briefcase className="w-6 h-6" />
+                            </div>
+                            <div>
+                              <h4 className="font-black text-slate-900">{job.role}</h4>
+                              <p className="text-xs text-slate-500 font-bold">NeuralSoft • Remote</p>
+                              <p className="text-[10px] text-emerald-600 font-black mt-1">$140k - $180k</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-sm font-bold text-white">{module.moduleTitle}</p>
-                            <p className="text-[10px] text-slate-400">{module.skillsToLearn.join(', ')}</p>
+                          <div className="flex items-center gap-4">
+                            <div className="text-right">
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Match Score</p>
+                              <p className="text-lg font-black text-indigo-600">{job.matchPercentage}%</p>
+                            </div>
+                            <button className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-slate-800 transition-all active:scale-95">
+                              Apply Now
+                            </button>
                           </div>
                         </div>
-                      ))}
+                      </div>
+                    )) : jobAlerts.map(job => (
+                      <div key={job.id} className="p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:border-indigo-200 transition-all group">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-white rounded-2xl border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 transition-colors">
+                              <Briefcase className="w-6 h-6" />
+                            </div>
+                            <div>
+                              <h4 className="font-black text-slate-900">{job.title}</h4>
+                              <p className="text-xs text-slate-500 font-bold">{job.company} • {job.location}</p>
+                              <p className="text-[10px] text-emerald-600 font-black mt-1">{job.salary}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <div className="text-right">
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Match Score</p>
+                              <p className="text-lg font-black text-indigo-600">{job.match}%</p>
+                            </div>
+                            <button className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-slate-800 transition-all active:scale-95">
+                              Apply Now
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Right Column: Gamification & AI Mentor */}
+              <div className="space-y-8">
+                {/* Badges & Achievements */}
+                <motion.div variants={itemVariants} className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                  <h3 className="text-xl font-black text-slate-900 mb-6">Achievements</h3>
+                  <div className="grid grid-cols-3 gap-4">
+                    {gamification.badges.map(badge => (
+                      <div key={badge.id} className="flex flex-col items-center text-center group cursor-help">
+                        <div className={`w-12 h-12 rounded-2xl ${badge.color} flex items-center justify-center mb-2 transition-transform group-hover:scale-110`}>
+                          {badge.icon}
+                        </div>
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight">{badge.name}</span>
+                      </div>
+                    ))}
+                    <div className="flex flex-col items-center text-center opacity-30">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mb-2">
+                        <ShieldAlert className="w-4 h-4 text-slate-400" />
+                      </div>
+                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight">Locked</span>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* AI Mentor Chatbot */}
+                <motion.div variants={itemVariants} className="bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200 flex flex-col h-[500px]">
+                  <div className="p-6 bg-slate-800 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center text-white">
+                        <Bot className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-white">AI Career Mentor</h4>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Online</span>
+                        </div>
+                      </div>
+                    </div>
+                    <button className="text-slate-400 hover:text-white transition-colors">
+                      <Sparkles className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <div className="flex-1 p-6 space-y-4 overflow-y-auto bg-slate-900/50">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center text-white shrink-0">
+                        <Bot className="w-4 h-4" />
+                      </div>
+                      <div className="bg-slate-800 p-4 rounded-2xl rounded-tl-none text-sm text-slate-300 leading-relaxed">
+                        Hello Alex! I've analyzed your progress. You're just 2 modules away from completing your AI Strategy certification. How can I help you today?
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3 justify-end">
+                      <div className="bg-indigo-600 p-4 rounded-2xl rounded-tr-none text-sm text-white leading-relaxed">
+                        What's the best way to explain my transition to AI in an interview?
+                      </div>
+                      <div className="w-8 h-8 bg-slate-700 rounded-lg flex items-center justify-center text-white shrink-0">
+                        <User className="w-4 h-4" />
+                      </div>
                     </div>
                   </div>
 
-                  <button 
-                    onClick={() => setView('upskill')}
-                    className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 hover:bg-blue-500 transition-all group/btn"
-                  >
-                    Start Learning Path
-                    <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
-                  </button>
-                </div>
-
-                {/* Decorative Background */}
-                <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-blue-600/10 blur-[100px] rounded-full" />
-              </motion.div>
-
-              {/* Skill Gap Analysis Chart */}
-              <motion.div variants={itemVariants} className="md:col-span-2 bg-white rounded-[2rem] border border-slate-200 p-8 flex flex-col shadow-sm hover:shadow-md transition-shadow overflow-hidden group">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <p className="text-slate-400 text-xs font-black uppercase tracking-[0.2em] mb-1">Skill Gap Analysis</p>
-                    <h3 className="text-xl font-black text-slate-900">Current vs. Target</h3>
-                  </div>
-                  <button 
-                    onClick={() => setView('gap-analysis')}
-                    className="text-xs font-black text-blue-600 uppercase tracking-widest hover:text-blue-700 transition-colors flex items-center gap-1"
-                  >
-                    View Details
-                    <ChevronRight className="w-3 h-3" />
-                  </button>
-                </div>
-                
-                <div className="flex-1 min-h-[250px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart cx="50%" cy="50%" outerRadius="70%" data={skillData}>
-                      <PolarGrid stroke="#e2e8f0" />
-                      <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }} />
-                      <Radar
-                        name="Current"
-                        dataKey="A"
-                        stroke="#94a3b8"
-                        fill="#94a3b8"
-                        fillOpacity={0.3}
+                  <div className="p-6 bg-slate-800">
+                    <div className="relative">
+                      <input 
+                        type="text"
+                        value={chatMessage}
+                        onChange={(e) => setChatMessage(e.target.value)}
+                        placeholder="Ask your mentor..."
+                        className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-3 pl-4 pr-12 text-sm focus:outline-none focus:border-indigo-500 transition-colors"
                       />
-                      <Radar
-                        name="Target"
-                        dataKey="B"
-                        stroke="#2563eb"
-                        fill="#2563eb"
-                        fillOpacity={0.5}
-                      />
-                    </RadarChart>
-                  </ResponsiveContainer>
-                </div>
-
-                <div className="flex items-center justify-center gap-6 mt-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-slate-400" />
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Current</span>
+                      <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition-colors">
+                        <Send className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-blue-600" />
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Target Role</span>
-                  </div>
-                </div>
-              </motion.div>
+                </motion.div>
+              </div>
             </div>
-
-            {/* Quick Actions */}
-            <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <button 
-                onClick={() => setView('resume-portfolio')}
-                className="p-8 bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-left group"
-              >
-                <div className="bg-blue-50 w-12 h-12 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                  <Zap className="w-6 h-6" />
-                </div>
-                <h4 className="text-lg font-black text-slate-900 mb-2">Resume & Portfolio</h4>
-                <p className="text-sm text-slate-500">Showcase your new AI competencies.</p>
-              </button>
-              <button 
-                onClick={() => setView('upskill')}
-                className="p-8 bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-left group"
-              >
-                <div className="bg-purple-50 w-12 h-12 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-purple-600 group-hover:text-white transition-all">
-                  <Target className="w-6 h-6" />
-                </div>
-                <h4 className="text-lg font-black text-slate-900 mb-2">Upskill Plan</h4>
-                <p className="text-sm text-slate-500">Continue your learning journey.</p>
-              </button>
-              <button 
-                onClick={() => setView('experience')}
-                className="p-8 bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-left group"
-              >
-                <div className="bg-emerald-50 w-12 h-12 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                  <Sparkles className="w-6 h-6" />
-                </div>
-                <h4 className="text-lg font-black text-slate-900 mb-2">Experience Builder</h4>
-                <p className="text-sm text-slate-500">Update your professional profile.</p>
-              </button>
-            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

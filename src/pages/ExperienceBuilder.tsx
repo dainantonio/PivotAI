@@ -16,30 +16,31 @@ import {
   Users,
   Building2,
   Wand2,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { aiService, ParsedProfile } from '../services/aiService';
 
 interface ExperienceBuilderProps {
-  onNext: () => void;
+  onNext: (profile: ParsedProfile) => void;
   onBack?: () => void;
 }
 
-type Mode = 'initial' | 'parsing' | 'guided' | 'results';
+type Mode = 'initial' | 'parsing' | 'guided' | 'results' | 'pasting';
 
 export default function ExperienceBuilder({ onNext, onBack }: ExperienceBuilderProps) {
   const [mode, setMode] = useState<Mode>('initial');
   const [currentStep, setCurrentStep] = useState(1);
   const [isParsing, setIsParsing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   // Data States
-  const [skills, setSkills] = useState<string[]>(['Strategic Planning', 'Market Analysis', 'Team Leadership']);
-  const [tools, setTools] = useState<string[]>(['Salesforce', 'Tableau', 'Jira', 'Slack']);
-  const [achievements, setAchievements] = useState<string[]>([
-    'Led a cross-functional team of 15 to launch a new product line, resulting in $2M ARR.',
-    'Optimized marketing spend by 25% while increasing lead generation by 40%.',
-    'Implemented a new CRM system that improved sales efficiency by 15%.'
-  ]);
+  const [skills, setSkills] = useState<string[]>([]);
+  const [tools, setTools] = useState<string[]>([]);
+  const [responsibilities, setResponsibilities] = useState<string[]>([]);
+  const [achievements, setAchievements] = useState<string[]>([]);
+  const [experience, setExperience] = useState<ParsedProfile['experience']>([]);
 
   const [guidedData, setGuidedData] = useState({
     jobTitle: '',
@@ -51,17 +52,46 @@ export default function ExperienceBuilder({ onNext, onBack }: ExperienceBuilderP
 
   const [pasteText, setPasteText] = useState('');
 
-  const handleStartParsing = () => {
+  const handleStartParsing = async (textToParse?: string) => {
+    const text = textToParse || pasteText;
+    if (!text) return;
+
     setMode('parsing');
     setIsParsing(true);
-    setTimeout(() => {
-      setIsParsing(false);
+    setError(null);
+
+    try {
+      const result = await aiService.parseExperience(text);
+      setSkills(result.skills);
+      setTools(result.tools);
+      setExperience(result.experience);
+      
+      // Flatten responsibilities and achievements from all experience entries
+      const allResponsibilities = result.experience.flatMap(exp => exp.responsibilities || []);
+      setResponsibilities(allResponsibilities);
+      
+      const allAchievements = result.experience.flatMap(exp => exp.achievements);
+      setAchievements(allAchievements);
+      
       setMode('results');
-    }, 2500);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to parse experience. Please try again.");
+      setMode('initial');
+    } finally {
+      setIsParsing(false);
+    }
   };
 
   const handleGuidedSubmit = () => {
-    handleStartParsing();
+    const combinedText = `
+      Job Title: ${guidedData.jobTitle}
+      Tasks: ${guidedData.tasks}
+      Tools: ${guidedData.tools}
+      Team Size: ${guidedData.teamSize}
+      Industry: ${guidedData.industry}
+    `;
+    handleStartParsing(combinedText);
   };
 
   const addSkill = (skill: string) => {
@@ -96,6 +126,20 @@ export default function ExperienceBuilder({ onNext, onBack }: ExperienceBuilderP
 
   const addAchievement = () => {
     setAchievements([...achievements, '']);
+  };
+
+  const updateResponsibility = (index: number, value: string) => {
+    const newResponsibilities = [...responsibilities];
+    newResponsibilities[index] = value;
+    setResponsibilities(newResponsibilities);
+  };
+
+  const removeResponsibility = (index: number) => {
+    setResponsibilities(responsibilities.filter((_, i) => i !== index));
+  };
+
+  const addResponsibility = () => {
+    setResponsibilities([...responsibilities, '']);
   };
 
   // Render Initial Selection
@@ -133,7 +177,7 @@ export default function ExperienceBuilder({ onNext, onBack }: ExperienceBuilderP
           {/* Paste Text */}
           <motion.button
             whileHover={{ y: -8 }}
-            onClick={() => setMode('parsing')} // Simplified for now
+            onClick={() => setMode('pasting')}
             className="bg-white p-10 rounded-[2.5rem] border-2 border-slate-100 hover:border-indigo-500 transition-all text-left group shadow-sm hover:shadow-xl"
           >
             <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
@@ -165,6 +209,42 @@ export default function ExperienceBuilder({ onNext, onBack }: ExperienceBuilderP
               Start Wizard <ArrowRight className="w-4 h-4" />
             </div>
           </motion.button>
+        </div>
+      </div>
+    );
+  }
+
+  // Render Pasting View
+  if (mode === 'pasting') {
+    return (
+      <div className="max-w-3xl mx-auto py-12 px-4">
+        <div className="bg-white p-12 rounded-[3rem] border border-slate-200 shadow-xl shadow-slate-100">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight">Paste Your Experience</h2>
+            <button onClick={() => setMode('initial')} className="text-slate-400 hover:text-slate-600">
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <p className="text-slate-500 mb-8">
+            Paste your resume text, LinkedIn profile, or a detailed description of your work history.
+          </p>
+          <textarea
+            autoFocus
+            placeholder="Paste here..."
+            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-6 text-lg focus:outline-none focus:border-indigo-500 transition-all min-h-[300px] mb-8"
+            value={pasteText}
+            onChange={(e) => setPasteText(e.target.value)}
+          />
+          <div className="flex justify-end">
+            <button
+              onClick={() => handleStartParsing()}
+              disabled={!pasteText.trim()}
+              className="bg-indigo-600 text-white px-10 py-5 rounded-2xl font-bold text-lg flex items-center gap-3 hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Analyze Experience
+              <ArrowRight className="w-6 h-6" />
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -360,6 +440,37 @@ export default function ExperienceBuilder({ onNext, onBack }: ExperienceBuilderP
                 </div>
               </div>
 
+              {/* Responsibilities */}
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">Key Responsibilities</label>
+                <div className="space-y-4">
+                  {responsibilities.map((responsibility, i) => (
+                    <div key={i} className="flex gap-4 group">
+                      <div className="flex-1">
+                        <textarea
+                          value={responsibility}
+                          onChange={(e) => updateResponsibility(i, e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all min-h-[80px]"
+                        />
+                      </div>
+                      <button 
+                        onClick={() => removeResponsibility(i)}
+                        className="p-2 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ))}
+                  <button 
+                    onClick={addResponsibility}
+                    className="w-full py-4 border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 font-bold text-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Responsibility
+                  </button>
+                </div>
+              </div>
+
               {/* Achievements */}
               <div>
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">Key Achievements</label>
@@ -435,7 +546,23 @@ export default function ExperienceBuilder({ onNext, onBack }: ExperienceBuilderP
 
                 <div className="pt-8 border-t border-white/10">
                   <button 
-                    onClick={onNext}
+                    onClick={() => {
+                      const updatedExperience = experience.map((exp, i) => {
+                        if (i === 0) {
+                          return {
+                            ...exp,
+                            achievements: achievements,
+                            responsibilities: responsibilities
+                          };
+                        }
+                        return {
+                          ...exp,
+                          achievements: [],
+                          responsibilities: []
+                        };
+                      });
+                      onNext({ skills, tools, experience: updatedExperience });
+                    }}
                     className="w-full bg-white text-indigo-900 px-8 py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-3 hover:bg-indigo-50 transition-all shadow-xl"
                   >
                     Confirm & Match Roles

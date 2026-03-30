@@ -12,7 +12,7 @@ import {
   Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { optimizeResume, OptimizedResume, CareerPath } from '../services/geminiService';
+import { aiService, OptimizedResume, CareerPath } from '../services/aiService';
 
 interface ResumeOptimizerProps {
   careerData: CareerPath | null;
@@ -34,7 +34,7 @@ export default function ResumeOptimizer({ careerData }: ResumeOptimizerProps) {
     setError(null);
     
     try {
-      const data = await optimizeResume(input, targetRole);
+      const data = await aiService.optimizeResume(input, targetRole);
       setOptimizedData(data);
       setIsOptimizing(false);
       setShowResults(true);

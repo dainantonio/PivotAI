@@ -10,7 +10,7 @@ import {
   Zap
 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { CareerPath, SkillGap } from '../services/geminiService';
+import { aiService, CareerPath, SkillGap } from '../services/aiService';
 
 interface SkillGapAnalysisProps {
   careerData: CareerPath | null;

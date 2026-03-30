@@ -43,25 +43,44 @@ import GapAnalysis from './pages/GapAnalysis';
 import UpskillPlan from './pages/UpskillPlan';
 import ResumePortfolio from './pages/ResumePortfolio';
 import StepIndicator from './components/StepIndicator';
-import { CareerPath } from './services/geminiService';
+import { aiService, CareerPath, ParsedProfile, RoleMatch } from './services/aiService';
 
 export default function App() {
   const [view, setView] = useState<'landing' | 'auth' | 'dashboard' | 'experience' | 'matching' | 'gap-analysis' | 'upskill' | 'resume-portfolio' | 'settings'>('landing');
   const [wizardStep, setWizardStep] = useState(0);
+  
+  // AI Data States
+  const [userProfile, setUserProfile] = useState<ParsedProfile | null>(() => {
+    const saved = localStorage.getItem('pivotai_user_profile');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [roleMatches, setRoleMatches] = useState<RoleMatch[]>(() => {
+    const saved = localStorage.getItem('pivotai_role_matches');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [selectedRole, setSelectedRole] = useState<RoleMatch | null>(() => {
+    const saved = localStorage.getItem('pivotai_selected_role');
+    return saved ? JSON.parse(saved) : null;
+  });
+
   const [careerData, setCareerData] = useState<CareerPath | null>(() => {
     const saved = localStorage.getItem('pivotai_career_data');
     return saved ? JSON.parse(saved) : null;
   });
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    if (userProfile) localStorage.setItem('pivotai_user_profile', JSON.stringify(userProfile));
+    if (roleMatches.length > 0) localStorage.setItem('pivotai_role_matches', JSON.stringify(roleMatches));
+    if (selectedRole) localStorage.setItem('pivotai_selected_role', JSON.stringify(selectedRole));
     if (careerData) {
       localStorage.setItem('pivotai_career_data', JSON.stringify(careerData));
     } else {
       localStorage.removeItem('pivotai_career_data');
     }
-  }, [careerData]);
+  }, [userProfile, roleMatches, selectedRole, careerData]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -118,12 +137,59 @@ export default function App() {
             <StepIndicator steps={wizardSteps} currentStepIndex={wizardStep} />
           </div>
         )}
-        {view === 'dashboard' && <Dashboard careerData={careerData} setCareerData={setCareerData} setView={setView} />}
-        {view === 'experience' && <ExperienceBuilder onNext={handleNextStep} />}
-        {view === 'matching' && <RoleMatching onNext={handleNextStep} onBack={handlePrevStep} />}
-        {view === 'gap-analysis' && <GapAnalysis onNext={handleNextStep} onBack={handlePrevStep} />}
-        {view === 'upskill' && <UpskillPlan onNext={handleNextStep} onBack={handlePrevStep} />}
-        {view === 'resume-portfolio' && <PortfolioBuilder careerData={careerData} onNext={handleNextStep} onBack={handlePrevStep} />}
+        {view === 'dashboard' && (
+          <Dashboard 
+            careerData={careerData} 
+            userProfile={userProfile}
+            roleMatches={roleMatches}
+            selectedRole={selectedRole}
+            setCareerData={setCareerData} 
+            setView={setView} 
+          />
+        )}
+        {view === 'experience' && (
+          <ExperienceBuilder 
+            onNext={(profile) => {
+              setUserProfile(profile);
+              handleNextStep();
+            }} 
+          />
+        )}
+        {view === 'matching' && (
+          <RoleMatching 
+            profile={userProfile}
+            onNext={(matches, selected) => {
+              setRoleMatches(matches);
+              setSelectedRole(selected);
+              handleNextStep();
+            }} 
+            onBack={handlePrevStep} 
+          />
+        )}
+        {view === 'gap-analysis' && (
+          <GapAnalysis 
+            profile={userProfile}
+            targetRole={selectedRole}
+            onNext={handleNextStep} 
+            onBack={handlePrevStep} 
+          />
+        )}
+        {view === 'upskill' && (
+          <UpskillPlan 
+            profile={userProfile}
+            targetRole={selectedRole}
+            onNext={handleNextStep} 
+            onBack={handlePrevStep} 
+          />
+        )}
+        {view === 'resume-portfolio' && (
+          <ResumePortfolio 
+            profile={userProfile}
+            targetRole={selectedRole}
+            onNext={handleNextStep} 
+            onBack={handlePrevStep} 
+          />
+        )}
         {view === 'settings' && <Settings />}
       </AppShell>
     );

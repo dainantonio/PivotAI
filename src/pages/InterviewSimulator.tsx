@@ -14,7 +14,7 @@ import {
   LogOut
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { interview, CareerPath } from '../services/geminiService';
+import { aiService, CareerPath } from '../services/aiService';
 
 interface Message {
   id: string;
@@ -78,7 +78,7 @@ export default function InterviewSimulator({ careerData, setView }: InterviewSim
         content: m.content
       }));
 
-      const response = await interview(history, currentAnswer, targetRole);
+      const response = await aiService.interview(history, currentAnswer, targetRole);
       
       // Update the user's message with feedback
       setMessages(prev => prev.map(m => 

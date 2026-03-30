@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -12,50 +12,55 @@ import {
   ChevronUp,
   Info,
   ShieldCheck,
-  BrainCircuit
+  BrainCircuit,
+  Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { aiService, ParsedProfile, RoleMatch, GapAnalysisResult } from '../services/aiService';
 
 interface GapAnalysisProps {
+  profile: ParsedProfile | null;
+  targetRole: RoleMatch | null;
   onNext: () => void;
   onBack: () => void;
 }
 
-export default function GapAnalysis({ onNext, onBack }: GapAnalysisProps) {
+export default function GapAnalysis({ profile, targetRole, onNext, onBack }: GapAnalysisProps) {
   const [isReportOpen, setIsReportOpen] = useState(false);
+  const [gapData, setGapData] = useState<GapAnalysisResult | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const skillData = {
-    have: [
-      'Product Management',
-      'Stakeholder Management',
-      'Agile Methodologies',
-      'Market Research',
-      'User Experience (UX)',
-      'Budgeting'
-    ],
-    missing: [
-      'LLM Architecture',
-      'Prompt Engineering',
-      'AI Ethics & Governance',
-      'Vector Databases',
-      'Python for Data Science',
-      'Model Evaluation'
-    ],
-    transferable: [
-      'Data-Driven Decision Making',
-      'User Research',
-      'Cross-Functional Leadership',
-      'Strategic Planning',
-      'Problem Solving',
-      'Communication'
-    ]
+  useEffect(() => {
+    if (profile && targetRole) {
+      handleAnalyzeGaps();
+    }
+  }, [profile, targetRole]);
+
+  const handleAnalyzeGaps = async () => {
+    if (!profile || !targetRole) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await aiService.analyzeGaps(profile.skills, targetRole.role);
+      setGapData(result);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to analyze gaps. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const prioritySkills = [
-    { name: 'LLM Architecture', impact: 'Critical', effort: 'Medium', reason: 'Foundational for understanding AI product feasibility.' },
-    { name: 'AI Ethics & Governance', impact: 'High', effort: 'Low', reason: 'Essential for responsible AI product strategy.' },
-    { name: 'Prompt Engineering', impact: 'High', effort: 'Low', reason: 'Immediate practical application in AI workflows.' }
-  ];
+  if (isLoading) {
+    return (
+      <div className="max-w-6xl mx-auto py-24 px-4 flex flex-col items-center justify-center text-slate-400">
+        <Loader2 className="w-16 h-16 animate-spin mb-6" />
+        <h2 className="text-2xl font-black text-slate-900 mb-2">Analyzing Skill Gaps</h2>
+        <p>Mapping your DNA against the {targetRole?.role} role...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto py-12 px-4">
@@ -64,7 +69,7 @@ export default function GapAnalysis({ onNext, onBack }: GapAnalysisProps) {
           Gap <span className="text-indigo-600">Analysis</span>
         </h1>
         <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-          We've mapped your current DNA against the requirements for an <span className="font-bold text-slate-900">AI Product Strategist</span>.
+          We've mapped your current DNA against the requirements for an <span className="font-bold text-slate-900">{targetRole?.role}</span>.
         </p>
       </div>
 
@@ -79,7 +84,7 @@ export default function GapAnalysis({ onNext, onBack }: GapAnalysisProps) {
             <h3 className="text-xl font-black text-slate-900 tracking-tight">Skills You Have</h3>
           </div>
           <div className="flex flex-wrap gap-2">
-            {skillData.have.map(skill => (
+            {gapData?.skillsHave.map(skill => (
               <span key={skill} className="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-bold border border-emerald-100">
                 {skill}
               </span>
@@ -96,7 +101,7 @@ export default function GapAnalysis({ onNext, onBack }: GapAnalysisProps) {
             <h3 className="text-xl font-black text-slate-900 tracking-tight">Skills Missing</h3>
           </div>
           <div className="flex flex-wrap gap-2">
-            {skillData.missing.map(skill => (
+            {gapData?.skillsMissing.map(skill => (
               <span key={skill} className="px-4 py-2 bg-red-50 text-red-700 rounded-xl text-xs font-bold border border-red-100">
                 {skill}
               </span>
@@ -113,7 +118,7 @@ export default function GapAnalysis({ onNext, onBack }: GapAnalysisProps) {
             <h3 className="text-xl font-black text-slate-900 tracking-tight">Transferable</h3>
           </div>
           <div className="flex flex-wrap gap-2">
-            {skillData.transferable.map(skill => (
+            {gapData?.transferableSkills.map(skill => (
               <span key={skill} className="px-4 py-2 bg-blue-50 text-blue-700 rounded-xl text-xs font-bold border border-blue-100">
                 {skill}
               </span>
@@ -133,28 +138,26 @@ export default function GapAnalysis({ onNext, onBack }: GapAnalysisProps) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {prioritySkills.map((skill, i) => (
+            {gapData?.priorityFocus.map((skill, i) => (
               <motion.div 
-                key={skill.name}
+                key={skill}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
                 className="bg-white/5 rounded-3xl p-6 border border-white/10 hover:bg-white/10 transition-colors"
               >
                 <div className="flex justify-between items-start mb-4">
-                  <h4 className="font-bold text-lg">{skill.name}</h4>
-                  <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded ${
-                    skill.impact === 'Critical' ? 'bg-red-500/20 text-red-300' : 'bg-indigo-500/20 text-indigo-300'
-                  }`}>
-                    {skill.impact} Impact
+                  <h4 className="font-bold text-lg">{skill}</h4>
+                  <span className="bg-indigo-500/20 text-indigo-300 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded">
+                    High Impact
                   </span>
                 </div>
                 <p className="text-sm text-slate-400 leading-relaxed mb-4">
-                  {skill.reason}
+                  Critical for bridging the gap to {targetRole?.role}.
                 </p>
                 <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
                   <Zap className="w-3 h-3" />
-                  Effort: {skill.effort}
+                  Effort: Medium
                 </div>
               </motion.div>
             ))}

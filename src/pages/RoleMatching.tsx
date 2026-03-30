@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Target, 
   TrendingUp, 
@@ -7,52 +7,47 @@ import {
   Sparkles,
   ArrowRight,
   ShieldCheck,
-  BarChart3
+  BarChart3,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { aiService, ParsedProfile, RoleMatch } from '../services/aiService';
 
 interface RoleMatchingProps {
-  onNext: () => void;
+  profile: ParsedProfile | null;
+  onNext: (matches: RoleMatch[], selected: RoleMatch) => void;
   onBack: () => void;
 }
 
-export default function RoleMatching({ onNext, onBack }: RoleMatchingProps) {
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+export default function RoleMatching({ profile, onNext, onBack }: RoleMatchingProps) {
+  const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
+  const [roles, setRoles] = useState<RoleMatch[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const roles = [
-    { 
-      id: '1', 
-      title: 'AI Operations Specialist', 
-      match: 94, 
-      salary: '$135k - $180k',
-      description: 'Optimize business workflows by integrating AI tools and managing model performance.',
-      skills: ['Workflow Automation', 'AI Implementation', 'Process Optimization', 'Python']
-    },
-    { 
-      id: '2', 
-      title: 'Prompt Engineer', 
-      match: 88, 
-      salary: '$145k - $190k',
-      description: 'Design and refine high-performance prompts for LLMs to solve complex business problems.',
-      skills: ['NLP', 'Iterative Testing', 'Creative Strategy', 'LLM Architecture']
-    },
-    { 
-      id: '3', 
-      title: 'AI Data Analyst', 
-      match: 82, 
-      salary: '$120k - $165k',
-      description: 'Translate raw data into actionable AI insights using advanced predictive modeling.',
-      skills: ['Data Visualization', 'SQL', 'Predictive Modeling', 'Machine Learning']
-    },
-    { 
-      id: '4', 
-      title: 'AI Product Strategist', 
-      match: 78, 
-      salary: '$160k - $210k',
-      description: 'Bridge the gap between AI technical capabilities and market-ready product features.',
-      skills: ['Product Roadmap', 'Market Analysis', 'Stakeholder Management', 'AI Feasibility']
+  useEffect(() => {
+    if (profile) {
+      handleMatchRoles();
     }
-  ];
+  }, [profile]);
+
+  const handleMatchRoles = async () => {
+    if (!profile) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await aiService.matchRoles(profile);
+      setRoles(result.matches);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to match roles. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const selectedRole = roles.find(r => r.role === selectedRoleId);
 
   return (
     <div className="max-w-5xl mx-auto py-12 px-4">
@@ -62,20 +57,31 @@ export default function RoleMatching({ onNext, onBack }: RoleMatchingProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-12">
-        {roles.map((role, index) => (
+        {isLoading ? (
+          <div className="col-span-full py-24 flex flex-col items-center justify-center text-slate-400">
+            <Loader2 className="w-12 h-12 animate-spin mb-4" />
+            <p className="font-bold">Finding your perfect AI match...</p>
+          </div>
+        ) : error ? (
+          <div className="col-span-full py-24 flex flex-col items-center justify-center text-red-500">
+            <AlertCircle className="w-12 h-12 mb-4" />
+            <p className="font-bold">{error}</p>
+            <button onClick={handleMatchRoles} className="mt-4 text-indigo-600 font-bold hover:underline">Try Again</button>
+          </div>
+        ) : roles.map((role, index) => (
           <motion.div 
-            key={role.id}
+            key={role.role}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.1 }}
-            onClick={() => setSelectedRole(role.id)}
+            onClick={() => setSelectedRoleId(role.role)}
             className={`cursor-pointer p-8 rounded-[2.5rem] border-2 transition-all duration-300 relative overflow-hidden group ${
-              selectedRole === role.id 
+              selectedRoleId === role.role 
                 ? 'border-indigo-600 bg-indigo-50/50 shadow-2xl shadow-indigo-100 -translate-y-2' 
                 : 'border-slate-200 bg-white hover:border-indigo-300 hover:shadow-xl hover:-translate-y-1'
             }`}
           >
-            {selectedRole === role.id && (
+            {selectedRoleId === role.role && (
               <div className="absolute top-0 right-0 p-6">
                 <div className="bg-indigo-600 text-white p-2 rounded-full shadow-lg">
                   <ShieldCheck className="w-5 h-5" />
@@ -85,38 +91,38 @@ export default function RoleMatching({ onNext, onBack }: RoleMatchingProps) {
 
             <div className="flex items-center gap-3 mb-6">
               <div className={`p-3 rounded-2xl transition-colors ${
-                selectedRole === role.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 group-hover:bg-indigo-100 group-hover:text-indigo-600'
+                selectedRoleId === role.role ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 group-hover:bg-indigo-100 group-hover:text-indigo-600'
               }`}>
                 <Target className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-lg font-black text-slate-900">{role.title}</h3>
+                <h3 className="text-lg font-black text-slate-900 leading-tight">{role.role}</h3>
                 <div className="flex items-center gap-2 mt-1">
                   <TrendingUp className="w-3 h-3 text-emerald-500" />
-                  <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">{role.match}% Match</span>
+                  <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">{role.matchPercentage}% Match</span>
                 </div>
               </div>
             </div>
 
-            <p className="text-sm text-slate-600 leading-relaxed mb-8 h-12">
+            <p className="text-sm text-slate-600 leading-relaxed mb-8 h-12 overflow-hidden">
               {role.description}
             </p>
 
             <div className="space-y-4 mb-8">
               <div className="flex justify-between items-center text-xs">
                 <span className="text-slate-400 font-bold uppercase tracking-widest">Match Strength</span>
-                <span className="text-indigo-600 font-black">{role.match}%</span>
+                <span className="text-indigo-600 font-black">{role.matchPercentage}%</span>
               </div>
               <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-indigo-600 rounded-full transition-all duration-1000"
-                  style={{ width: `${role.match}%` }}
+                  style={{ width: `${role.matchPercentage}%` }}
                 />
               </div>
             </div>
 
             <div className="flex flex-wrap gap-2 mb-8">
-              {role.skills.map(skill => (
+              {role.keySkills.map(skill => (
                 <span key={skill} className="px-3 py-1 bg-white border border-slate-200 text-slate-600 rounded-full text-[10px] font-bold">
                   {skill}
                 </span>
@@ -124,7 +130,7 @@ export default function RoleMatching({ onNext, onBack }: RoleMatchingProps) {
             </div>
 
             <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
-              <span className="text-sm font-black text-slate-900">{role.salary}</span>
+              <span className="text-sm font-black text-slate-900">$140k - $200k</span>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Est. Salary</span>
             </div>
           </motion.div>
@@ -140,8 +146,8 @@ export default function RoleMatching({ onNext, onBack }: RoleMatchingProps) {
           Back to Experience
         </button>
         <button 
-          onClick={onNext}
-          disabled={!selectedRole}
+          onClick={() => selectedRole && onNext(roles, selectedRole)}
+          disabled={!selectedRoleId || isLoading}
           className="bg-indigo-600 text-white px-10 py-5 rounded-3xl font-bold text-lg flex items-center gap-3 hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 hover:-translate-y-1 active:scale-95 group disabled:opacity-50 disabled:shadow-none disabled:translate-y-0"
         >
           Confirm My Pivot

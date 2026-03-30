@@ -16,7 +16,7 @@ import {
   Settings as SettingsIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { CareerPath } from '../services/geminiService';
+import { aiService, CareerPath } from '../services/aiService';
 
 interface Lesson {
   id: string;

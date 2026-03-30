@@ -15,7 +15,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { generateProjectDescription, CareerPath } from '../services/geminiService';
+import { aiService, CareerPath } from '../services/aiService';
 
 interface Project {
   id: string;
@@ -101,7 +101,7 @@ export default function PortfolioBuilder({ careerData, onNext, onBack }: Portfol
     if (!newProject.title || !newProject.description) return;
     setIsEnhancing(true);
     try {
-      const enhanced = await generateProjectDescription(
+      const enhanced = await aiService.generateProjectDescription(
         newProject.title,
         newProject.description,
         careerData?.recommendedPivot || 'AI Engineer'
@@ -117,7 +117,7 @@ export default function PortfolioBuilder({ careerData, onNext, onBack }: Portfol
   const handleEnhanceExisting = async (project: Project) => {
     setEnhancingId(project.id);
     try {
-      const enhanced = await generateProjectDescription(
+      const enhanced = await aiService.generateProjectDescription(
         project.title,
         project.description,
         careerData?.recommendedPivot || 'AI Product Strategist'
