@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -7,9 +7,14 @@ import {
   ArrowRight,
   ChevronRight,
   Zap,
-  Target
+  Target,
+  ChevronDown,
+  ChevronUp,
+  Info,
+  ShieldCheck,
+  BrainCircuit
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface GapAnalysisProps {
   onNext: () => void;
@@ -17,117 +22,214 @@ interface GapAnalysisProps {
 }
 
 export default function GapAnalysis({ onNext, onBack }: GapAnalysisProps) {
-  const gaps = [
-    { skill: 'AI Strategy', current: 20, target: 90, priority: 'High', description: 'Deep understanding of AI implementation frameworks and ROI calculation.' },
-    { skill: 'Data Analytics', current: 45, target: 85, priority: 'Medium', description: 'Leveraging data for predictive modeling and business intelligence.' },
-    { skill: 'Product Management', current: 80, target: 95, priority: 'Low', description: 'Advanced agile methodologies and product lifecycle management.' },
-    { skill: 'NLP Fundamentals', current: 10, target: 75, priority: 'High', description: 'Understanding natural language processing and transformer architectures.' }
+  const [isReportOpen, setIsReportOpen] = useState(false);
+
+  const skillData = {
+    have: [
+      'Product Management',
+      'Stakeholder Management',
+      'Agile Methodologies',
+      'Market Research',
+      'User Experience (UX)',
+      'Budgeting'
+    ],
+    missing: [
+      'LLM Architecture',
+      'Prompt Engineering',
+      'AI Ethics & Governance',
+      'Vector Databases',
+      'Python for Data Science',
+      'Model Evaluation'
+    ],
+    transferable: [
+      'Data-Driven Decision Making',
+      'User Research',
+      'Cross-Functional Leadership',
+      'Strategic Planning',
+      'Problem Solving',
+      'Communication'
+    ]
+  };
+
+  const prioritySkills = [
+    { name: 'LLM Architecture', impact: 'Critical', effort: 'Medium', reason: 'Foundational for understanding AI product feasibility.' },
+    { name: 'AI Ethics & Governance', impact: 'High', effort: 'Low', reason: 'Essential for responsible AI product strategy.' },
+    { name: 'Prompt Engineering', impact: 'High', effort: 'Low', reason: 'Immediate practical application in AI workflows.' }
   ];
 
   return (
-    <div className="max-w-5xl mx-auto py-12 px-4">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-black text-slate-900 tracking-tight mb-4">Gap Analysis</h1>
-        <p className="text-slate-500 text-lg">We've identified the specific skill gaps between your current role and your target pivot.</p>
+    <div className="max-w-6xl mx-auto py-12 px-4">
+      <div className="text-center mb-16">
+        <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-6">
+          Gap <span className="text-indigo-600">Analysis</span>
+        </h1>
+        <p className="text-slate-500 text-lg max-w-2xl mx-auto">
+          We've mapped your current DNA against the requirements for an <span className="font-bold text-slate-900">AI Product Strategist</span>.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-        {/* Main Gap List */}
-        <div className="lg:col-span-2 space-y-4">
-          {gaps.map((gap, index) => (
-            <motion.div 
-              key={gap.skill}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm hover:shadow-md transition-all group"
-            >
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
-                <div className="flex items-center gap-4">
-                  <div className={`p-3 rounded-2xl ${
-                    gap.priority === 'High' ? 'bg-red-50 text-red-600' : 
-                    gap.priority === 'Medium' ? 'bg-amber-50 text-amber-600' : 
-                    'bg-blue-50 text-blue-600'
-                  }`}>
-                    <Zap className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black text-slate-900">{gap.skill}</h3>
-                    <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${
-                      gap.priority === 'High' ? 'bg-red-100 text-red-700' : 
-                      gap.priority === 'Medium' ? 'bg-amber-100 text-amber-700' : 
-                      'bg-blue-100 text-blue-700'
-                    }`}>
-                      {gap.priority} Priority
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-6">
-                  <div className="text-center">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Current</p>
-                    <p className="text-lg font-black text-slate-400">{gap.current}%</p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-slate-300" />
-                  <div className="text-center">
-                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Target</p>
-                    <p className="text-lg font-black text-indigo-600">{gap.target}%</p>
-                  </div>
-                </div>
-              </div>
+      {/* 3-Column Skill Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        {/* Skills You Have */}
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="bg-emerald-50 p-2 rounded-xl">
+              <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+            </div>
+            <h3 className="text-xl font-black text-slate-900 tracking-tight">Skills You Have</h3>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {skillData.have.map(skill => (
+              <span key={skill} className="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-bold border border-emerald-100">
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
 
-              <div className="space-y-4">
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden relative">
-                  <div 
-                    className="absolute inset-y-0 left-0 bg-slate-300 rounded-full transition-all duration-1000"
-                    style={{ width: `${gap.current}%` }}
-                  />
-                  <div 
-                    className="absolute inset-y-0 left-0 bg-indigo-600 rounded-full opacity-40 transition-all duration-1000"
-                    style={{ width: `${gap.target}%` }}
-                  />
+        {/* Skills Missing */}
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="bg-red-50 p-2 rounded-xl">
+              <AlertCircle className="w-6 h-6 text-red-600" />
+            </div>
+            <h3 className="text-xl font-black text-slate-900 tracking-tight">Skills Missing</h3>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {skillData.missing.map(skill => (
+              <span key={skill} className="px-4 py-2 bg-red-50 text-red-700 rounded-xl text-xs font-bold border border-red-100">
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Transferable Skills */}
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="bg-blue-50 p-2 rounded-xl">
+              <Zap className="w-6 h-6 text-blue-600" />
+            </div>
+            <h3 className="text-xl font-black text-slate-900 tracking-tight">Transferable</h3>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {skillData.transferable.map(skill => (
+              <span key={skill} className="px-4 py-2 bg-blue-50 text-blue-700 rounded-xl text-xs font-bold border border-blue-100">
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Priority Skills Section */}
+      <div className="bg-slate-900 rounded-[3rem] p-10 text-white mb-12 relative overflow-hidden shadow-2xl shadow-slate-200">
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-10">
+            <div className="bg-indigo-500/20 p-2 rounded-xl">
+              <Target className="w-6 h-6 text-indigo-300" />
+            </div>
+            <h3 className="text-2xl font-black tracking-tight">Priority Focus Areas</h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {prioritySkills.map((skill, i) => (
+              <motion.div 
+                key={skill.name}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className="bg-white/5 rounded-3xl p-6 border border-white/10 hover:bg-white/10 transition-colors"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <h4 className="font-bold text-lg">{skill.name}</h4>
+                  <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded ${
+                    skill.impact === 'Critical' ? 'bg-red-500/20 text-red-300' : 'bg-indigo-500/20 text-indigo-300'
+                  }`}>
+                    {skill.impact} Impact
+                  </span>
                 </div>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  {gap.description}
+                <p className="text-sm text-slate-400 leading-relaxed mb-4">
+                  {skill.reason}
                 </p>
+                <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                  <Zap className="w-3 h-3" />
+                  Effort: {skill.effort}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+        <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-indigo-600/10 blur-[100px] rounded-full" />
+      </div>
+
+      {/* Detailed Report Expandable */}
+      <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden mb-12">
+        <button 
+          onClick={() => setIsReportOpen(!isReportOpen)}
+          className="w-full p-8 flex items-center justify-between hover:bg-slate-50 transition-colors"
+        >
+          <div className="flex items-center gap-4">
+            <div className="bg-slate-100 p-2 rounded-xl">
+              <BarChart3 className="w-6 h-6 text-slate-600" />
+            </div>
+            <div className="text-left">
+              <h3 className="text-xl font-black text-slate-900 tracking-tight">Detailed Analysis Report</h3>
+              <p className="text-slate-500 text-sm">In-depth breakdown of your career pivot readiness.</p>
+            </div>
+          </div>
+          {isReportOpen ? <ChevronUp className="w-6 h-6 text-slate-400" /> : <ChevronDown className="w-6 h-6 text-slate-400" />}
+        </button>
+
+        <AnimatePresence>
+          {isReportOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="p-8 pt-0 border-t border-slate-50 space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-8">
+                  <div className="space-y-6">
+                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                      <BrainCircuit className="w-4 h-4 text-indigo-600" />
+                      Cognitive Mapping
+                    </h4>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      Your experience in <span className="font-bold text-slate-900">Product Management</span> provides a 75% overlap with the strategic requirements of an AI role. The primary cognitive shift required is moving from deterministic logic to probabilistic reasoning (AI models).
+                    </p>
+                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                      <p className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-widest">Pivot Readiness Score</p>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-4xl font-black text-indigo-600">82</span>
+                        <span className="text-slate-400 font-bold">/ 100</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      Market Viability
+                    </h4>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      The demand for <span className="font-bold text-slate-900">AI Product Strategists</span> has increased by 140% in the last 12 months. Your background in high-growth SaaS makes you a top-tier candidate once the technical gaps are addressed.
+                    </p>
+                    <ul className="space-y-3">
+                      {['High salary growth potential', 'Low automation risk', 'Strategic leadership role'].map(item => (
+                        <li key={item} className="flex items-center gap-2 text-sm text-slate-600">
+                          <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </div>
             </motion.div>
-          ))}
-        </div>
-
-        {/* Sidebar Summary */}
-        <div className="space-y-6">
-          <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-xl relative overflow-hidden">
-            <div className="relative z-10">
-              <p className="text-indigo-400 text-[10px] font-black uppercase tracking-[0.2em] mb-4">Summary</p>
-              <div className="space-y-6">
-                <div className="flex items-baseline gap-2">
-                  <h3 className="text-5xl font-black text-white">4</h3>
-                  <span className="text-slate-400 font-bold">Critical Gaps</span>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <h3 className="text-5xl font-black text-white">12</h3>
-                  <span className="text-slate-400 font-bold">Weeks to Pivot</span>
-                </div>
-              </div>
-              <div className="mt-10 pt-10 border-t border-white/10">
-                <p className="text-sm text-slate-400 leading-relaxed">
-                  "Your background in Marketing gives you a unique advantage. The technical gap in AI Strategy is significant, but your transferable skills will accelerate your transition."
-                </p>
-              </div>
-            </div>
-            <div className="absolute -bottom-20 -right-20 w-60 h-60 bg-indigo-600/20 blur-[80px] rounded-full" />
-          </div>
-
-          <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
-            <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-amber-500" />
-              Expert Insight
-            </h4>
-            <p className="text-sm text-slate-600 leading-relaxed italic">
-              "Focus on AI Strategy first. It's the highest priority and will provide the most immediate value in your new role."
-            </p>
-          </div>
-        </div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Action Buttons */}

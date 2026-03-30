@@ -22,30 +22,35 @@ export default function RoleMatching({ onNext, onBack }: RoleMatchingProps) {
   const roles = [
     { 
       id: '1', 
-      title: 'AI Product Strategist', 
+      title: 'AI Operations Specialist', 
       match: 94, 
-      risk: 12, 
-      salary: '$165k - $210k',
-      description: 'Leverage your marketing background to lead AI-driven product transformations.',
-      skills: ['AI Strategy', 'Product Management', 'Data Analytics']
+      salary: '$135k - $180k',
+      description: 'Optimize business workflows by integrating AI tools and managing model performance.',
+      skills: ['Workflow Automation', 'AI Implementation', 'Process Optimization', 'Python']
     },
     { 
       id: '2', 
-      title: 'AI Prompt Engineer', 
+      title: 'Prompt Engineer', 
       match: 88, 
-      risk: 8, 
-      salary: '$140k - $185k',
-      description: 'Bridge the gap between creative content and large language models.',
-      skills: ['Prompt Engineering', 'NLP', 'Creative Strategy']
+      salary: '$145k - $190k',
+      description: 'Design and refine high-performance prompts for LLMs to solve complex business problems.',
+      skills: ['NLP', 'Iterative Testing', 'Creative Strategy', 'LLM Architecture']
     },
     { 
       id: '3', 
-      title: 'AI Ethics Consultant', 
+      title: 'AI Data Analyst', 
       match: 82, 
-      risk: 5, 
-      salary: '$150k - $195k',
-      description: 'Ensure responsible AI implementation across enterprise workflows.',
-      skills: ['AI Ethics', 'Compliance', 'Risk Management']
+      salary: '$120k - $165k',
+      description: 'Translate raw data into actionable AI insights using advanced predictive modeling.',
+      skills: ['Data Visualization', 'SQL', 'Predictive Modeling', 'Machine Learning']
+    },
+    { 
+      id: '4', 
+      title: 'AI Product Strategist', 
+      match: 78, 
+      salary: '$160k - $210k',
+      description: 'Bridge the gap between AI technical capabilities and market-ready product features.',
+      skills: ['Product Roadmap', 'Market Analysis', 'Stakeholder Management', 'AI Feasibility']
     }
   ];
 
@@ -56,7 +61,7 @@ export default function RoleMatching({ onNext, onBack }: RoleMatchingProps) {
         <p className="text-slate-500 text-lg">Based on your experience, we've identified the best tech-adjacent pivot roles for you.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-12">
         {roles.map((role, index) => (
           <motion.div 
             key={role.id}
@@ -99,13 +104,13 @@ export default function RoleMatching({ onNext, onBack }: RoleMatchingProps) {
 
             <div className="space-y-4 mb-8">
               <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-400 font-bold uppercase tracking-widest">Automation Risk</span>
-                <span className="text-red-500 font-black">{role.risk}%</span>
+                <span className="text-slate-400 font-bold uppercase tracking-widest">Match Strength</span>
+                <span className="text-indigo-600 font-black">{role.match}%</span>
               </div>
               <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-red-500 rounded-full transition-all duration-1000"
-                  style={{ width: `${role.risk}%` }}
+                  className="h-full bg-indigo-600 rounded-full transition-all duration-1000"
+                  style={{ width: `${role.match}%` }}
                 />
               </div>
             </div>
