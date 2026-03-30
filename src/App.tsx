@@ -18,7 +18,11 @@ import {
   X,
   Globe,
   Layers,
-  Cpu
+  Cpu,
+  Upload,
+  FileText,
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import AppShell from './components/AppShell';
@@ -241,9 +245,9 @@ export default function App() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight text-slate-900 mb-8 leading-[1.1]"
           >
-            Bridge the <br />
+            Turn your experience into <br />
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600">
-              AI Career Gap
+              AI-ready opportunities
             </span>
           </motion.h1>
 
@@ -251,130 +255,65 @@ export default function App() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="max-w-2xl mx-auto text-lg md:text-xl text-slate-600 mb-10 leading-relaxed"
+            className="max-w-2xl mx-auto text-lg md:text-xl text-slate-600 mb-16 leading-relaxed"
           >
-            Empower your transition with AI-driven skill mapping, personalized role matching, and micro-upskilling. AI Career Bridge is your path to the future of work.
+            The intelligent platform that maps your existing skills to high-growth AI roles and builds your personalized transition path.
           </motion.p>
 
+          {/* Input Options Grid */}
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20"
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-24"
           >
-            <button 
-              onClick={() => setView('auth')}
-              className="w-full sm:w-auto bg-slate-900 text-white px-8 py-4 rounded-full text-lg font-bold hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 hover:-translate-y-1 active:scale-95"
-            >
-              Start Assessment
-            </button>
-            <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white text-slate-900 border border-slate-200 px-8 py-4 rounded-full text-lg font-bold hover:bg-slate-50 transition-all hover:-translate-y-1 active:scale-95">
-              <Play className="w-5 h-5 fill-slate-900" />
-              Watch the film
-            </button>
-          </motion.div>
-
-          {/* Mock Dashboard UI */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95, y: 40 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="relative max-w-5xl mx-auto"
-          >
-            <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 p-4 md:p-8 overflow-hidden">
-              <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-3 h-3 rounded-full bg-red-400" />
-                  <div className="w-3 h-3 rounded-full bg-amber-400" />
-                  <div className="w-3 h-3 rounded-full bg-emerald-400" />
-                </div>
-                <div className="flex gap-2">
-                  <div className="h-6 w-24 bg-slate-100 rounded-md" />
-                  <div className="h-6 w-12 bg-slate-100 rounded-md" />
-                </div>
+            {/* Option 1: Upload Resume */}
+            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group cursor-pointer text-left flex flex-col h-full">
+              <div className="bg-indigo-50 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                <Upload className="w-7 h-7" />
               </div>
-
-              <div className="grid grid-cols-12 gap-6">
-                <div className="col-span-12 lg:col-span-8 space-y-6">
-                  <div className="grid grid-cols-3 gap-4">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                        <div className="h-2 w-12 bg-slate-200 rounded mb-3" />
-                        <div className="h-6 w-20 bg-slate-300 rounded" />
-                      </div>
-                    ))}
-                  </div>
-                  <div className="bg-slate-50 h-64 rounded-2xl border border-slate-100 p-6 relative overflow-hidden">
-                    <div className="flex items-end justify-between h-full gap-2">
-                      {[40, 70, 45, 90, 65, 80, 55, 95, 75, 85, 60, 100].map((h, i) => (
-                        <div 
-                          key={i} 
-                          className="w-full bg-indigo-500/20 rounded-t-sm relative group"
-                          style={{ height: `${h}%` }}
-                        >
-                          <div 
-                            className="absolute bottom-0 left-0 right-0 bg-indigo-600 rounded-t-sm transition-all duration-1000"
-                            style={{ height: `${h * 0.7}%` }}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <div className="col-span-12 lg:col-span-4 space-y-6">
-                  <div className="bg-slate-900 p-6 rounded-2xl text-white">
-                    <div className="flex items-center justify-between mb-6">
-                      <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Skill Density</span>
-                      <Zap className="w-4 h-4 text-amber-400" />
-                    </div>
-                    <div className="space-y-4">
-                      {[
-                        { label: 'Cloud Architecture', val: 88 },
-                        { label: 'Data Engineering', val: 72 },
-                        { label: 'Product Strategy', val: 94 }
-                      ].map((skill, i) => (
-                        <div key={i}>
-                          <div className="flex justify-between text-xs mb-1.5">
-                            <span className="text-slate-300">{skill.label}</span>
-                            <span className="font-bold">{skill.val}%</span>
-                          </div>
-                          <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-indigo-500 rounded-full"
-                              style={{ width: `${skill.val}%` }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
-                    <div className="h-4 w-32 bg-indigo-200 rounded mb-4" />
-                    <div className="space-y-3">
-                      <div className="h-2 w-full bg-indigo-100 rounded" />
-                      <div className="h-2 w-4/5 bg-indigo-100 rounded" />
-                      <div className="h-2 w-5/6 bg-indigo-100 rounded" />
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <h3 className="text-2xl font-black text-slate-900 mb-3">Upload Resume</h3>
+              <p className="text-slate-500 text-sm mb-8 flex-1">Let our AI analyze your professional history and extract your core transferable skills instantly.</p>
+              
+              <label className="w-full bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl py-8 flex flex-col items-center justify-center gap-2 hover:bg-slate-100 hover:border-indigo-300 transition-all cursor-pointer">
+                <input type="file" className="hidden" />
+                <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Drop PDF or Browse</span>
+              </label>
             </div>
 
-            {/* Floating Badge */}
-            <motion.div 
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -top-6 -right-6 md:top-12 md:-right-12 bg-white border border-slate-200 rounded-2xl p-4 shadow-xl flex items-center gap-3 z-10"
-            >
-              <div className="bg-emerald-100 p-2 rounded-lg">
-                <Target className="w-5 h-5 text-emerald-600" />
+            {/* Option 2: Paste Job Description */}
+            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group cursor-pointer text-left flex flex-col h-full">
+              <div className="bg-purple-50 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-purple-600 group-hover:text-white transition-all">
+                <FileText className="w-7 h-7" />
               </div>
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Career Trajectory</p>
-                <p className="text-sm font-bold text-slate-900">Optimized</p>
+              <h3 className="text-2xl font-black text-slate-900 mb-3">Paste Job Goal</h3>
+              <p className="text-slate-500 text-sm mb-8 flex-1">Have a specific AI role in mind? Paste the description and we'll show you exactly how to bridge the gap.</p>
+              
+              <textarea 
+                placeholder="Paste job description here..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all resize-none h-32"
+              />
+            </div>
+
+            {/* Option 3: Guided Input */}
+            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group cursor-pointer text-left flex flex-col h-full">
+              <div className="bg-blue-50 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                <Sparkles className="w-7 h-7" />
               </div>
-            </motion.div>
+              <h3 className="text-2xl font-black text-slate-900 mb-3">Guided Path</h3>
+              <p className="text-slate-500 text-sm mb-8 flex-1">Not sure where to start? Our step-by-step career assessment will help you find your perfect AI pivot.</p>
+              
+              <button 
+                onClick={() => setView('auth')}
+                className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all group/btn"
+              >
+                Start Assessment
+                <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
+              </button>
+            </div>
           </motion.div>
+
+
         </div>
       </section>
 
