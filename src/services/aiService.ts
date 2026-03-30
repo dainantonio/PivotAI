@@ -39,6 +39,23 @@ export interface GapAnalysisResult {
   }[];
 }
 
+export interface UpgradePack {
+  targetRole: string;
+  whyItFits: string;
+  top3Skills: string[];
+  sevenDayPlan: {
+    day: number;
+    task: string;
+    output: string;
+  }[];
+  projects: {
+    title: string;
+    description: string;
+  }[];
+  resumeBullets: string[];
+  linkedinHeadline: string;
+}
+
 export interface ExecutionPlan {
   days: {
     day: number;
@@ -260,6 +277,67 @@ export const aiService = {
             }
           },
           required: ["skillsHave", "skillsMissing", "transferableSkills", "priorityFocus", "reframedExperience"]
+        }
+      }
+    });
+    return JSON.parse(response.text || "{}");
+  },
+
+  async generateUpgradePack(profile: ParsedProfile, targetRole: string): Promise<UpgradePack> {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `Profile: ${JSON.stringify(profile)}\nTarget Role: ${targetRole}`,
+      config: {
+        systemInstruction: `You are an AI Career Transformation Strategist. Create a final "AI Career Upgrade Pack" for the user.
+        
+        Include:
+        1. Target Role
+        2. Why it fits (compelling, specific reasoning)
+        3. Top 3 Skills to focus on
+        4. 7-Day Plan (high-level tasks)
+        5. 2 Projects (titles and short descriptions)
+        6. 2 Resume Bullets (AI-optimized)
+        7. LinkedIn Headline (optimized for the target role)
+        
+        Make it clean, structured, and professional. Return structured JSON.`,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            targetRole: { type: Type.STRING },
+            whyItFits: { type: Type.STRING },
+            top3Skills: { type: Type.ARRAY, items: { type: Type.STRING }, minItems: 3, maxItems: 3 },
+            sevenDayPlan: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  day: { type: Type.NUMBER },
+                  task: { type: Type.STRING },
+                  output: { type: Type.STRING }
+                },
+                required: ["day", "task", "output"]
+              },
+              minItems: 7,
+              maxItems: 7
+            },
+            projects: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  title: { type: Type.STRING },
+                  description: { type: Type.STRING }
+                },
+                required: ["title", "description"]
+              },
+              minItems: 2,
+              maxItems: 2
+            },
+            resumeBullets: { type: Type.ARRAY, items: { type: Type.STRING }, minItems: 2, maxItems: 2 },
+            linkedinHeadline: { type: Type.STRING }
+          },
+          required: ["targetRole", "whyItFits", "top3Skills", "sevenDayPlan", "projects", "resumeBullets", "linkedinHeadline"]
         }
       }
     });
@@ -584,5 +662,16 @@ export const aiService = {
       }
     });
     return response.text || rawNotes;
+  },
+
+  async chatWithMentor(message: string, profile: ParsedProfile | null, targetRole: string, systemPrompt?: string): Promise<string> {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `User Message: ${message}\nProfile: ${JSON.stringify(profile)}\nTarget Role: ${targetRole}`,
+      config: {
+        systemInstruction: systemPrompt || "You are Coach Atlas, an AI Career Transformation Strategist. Be direct, supportive, and focus on high-ROI actions. Challenge excuses and keep responses concise.",
+      }
+    });
+    return response.text || "I'm processing that. Let's focus on your next high-impact move.";
   }
 };

@@ -42,11 +42,12 @@ import RoleMatching from './pages/RoleMatching';
 import GapAnalysis from './pages/GapAnalysis';
 import UpskillPlan from './pages/UpskillPlan';
 import ResumePortfolio from './pages/ResumePortfolio';
+import UpgradePackView from './pages/UpgradePack';
 import StepIndicator from './components/StepIndicator';
 import { aiService, CareerPath, ParsedProfile, RoleMatch } from './services/aiService';
 
 export default function App() {
-  const [view, setView] = useState<'landing' | 'auth' | 'dashboard' | 'experience' | 'matching' | 'gap-analysis' | 'upskill' | 'resume-portfolio' | 'settings'>('landing');
+  const [view, setView] = useState<'landing' | 'auth' | 'dashboard' | 'experience' | 'matching' | 'gap-analysis' | 'upskill' | 'resume-portfolio' | 'upgrade-pack' | 'settings'>('landing');
   const [wizardStep, setWizardStep] = useState(0);
   
   // AI Data States
@@ -104,7 +105,8 @@ export default function App() {
     { id: 'matching', title: 'Matching' },
     { id: 'gap-analysis', title: 'Gap Analysis' },
     { id: 'upskill', title: 'Upskill' },
-    { id: 'resume-portfolio', title: 'Profile' }
+    { id: 'resume-portfolio', title: 'Profile' },
+    { id: 'upgrade-pack', title: 'Upgrade Pack' }
   ];
 
   const handleNextStep = () => {
@@ -127,8 +129,8 @@ export default function App() {
     }
   };
 
-  if (view === 'dashboard' || view === 'experience' || view === 'matching' || view === 'gap-analysis' || view === 'upskill' || view === 'resume-portfolio' || view === 'settings') {
-    const isWizardView = ['experience', 'matching', 'gap-analysis', 'upskill', 'resume-portfolio'].includes(view);
+  if (view === 'dashboard' || view === 'experience' || view === 'matching' || view === 'gap-analysis' || view === 'upskill' || view === 'resume-portfolio' || view === 'upgrade-pack' || view === 'settings') {
+    const isWizardView = ['experience', 'matching', 'gap-analysis', 'upskill', 'resume-portfolio', 'upgrade-pack'].includes(view);
 
     return (
       <AppShell currentView={view} setView={setView}>
@@ -187,6 +189,14 @@ export default function App() {
             profile={userProfile}
             targetRole={selectedRole}
             onNext={handleNextStep} 
+            onBack={handlePrevStep} 
+          />
+        )}
+        {view === 'upgrade-pack' && (
+          <UpgradePackView 
+            profile={userProfile}
+            targetRole={selectedRole}
+            onFinish={() => setView('dashboard')}
             onBack={handlePrevStep} 
           />
         )}

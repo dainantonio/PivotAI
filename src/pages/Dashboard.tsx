@@ -48,6 +48,32 @@ export default function Dashboard({ careerData, userProfile, roleMatches, select
   const [industry, setIndustry] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [chatMessage, setChatMessage] = useState('');
+  const [chatHistory, setChatHistory] = useState<{ role: 'user' | 'bot', content: string }[]>([
+    { role: 'bot', content: `Hello ${userProfile?.currentRole?.split(' ')[0] || 'there'}! I've analyzed your progress. You're just a few steps away from being ready for ${selectedRole?.role || 'your next AI role'}. How can I help you today?` }
+  ]);
+  const [isChatLoading, setIsChatLoading] = useState(false);
+
+  const handleSendMessage = async () => {
+    if (!chatMessage.trim()) return;
+    
+    const userMsg = chatMessage;
+    setChatHistory(prev => [...prev, { role: 'user', content: userMsg }]);
+    setChatMessage('');
+    setIsChatLoading(true);
+
+    try {
+      const response = await aiService.chatWithMentor(
+        userMsg,
+        userProfile,
+        selectedRole?.role || 'AI Professional'
+      );
+      setChatHistory(prev => [...prev, { role: 'bot', content: response }]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsChatLoading(false);
+    }
+  };
 
   // Mock Gamification Data
   const gamification = {
@@ -236,12 +262,20 @@ export default function Dashboard({ careerData, userProfile, roleMatches, select
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Overall Readiness</p>
                     <p className="text-2xl font-black text-slate-900">68%</p>
                   </div>
-                  <div className="w-32 h-3 bg-slate-100 rounded-full overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: '68%' }}
-                      className="h-full bg-indigo-600 rounded-full"
-                    />
+                  <div className="flex flex-col gap-2">
+                    <div className="w-32 h-3 bg-slate-100 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: '68%' }}
+                        className="h-full bg-indigo-600 rounded-full"
+                      />
+                    </div>
+                    <button 
+                      onClick={() => setView('upgrade-pack')}
+                      className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline text-right"
+                    >
+                      View Upgrade Pack →
+                    </button>
                   </div>
                 </div>
               </div>
@@ -480,22 +514,33 @@ export default function Dashboard({ careerData, userProfile, roleMatches, select
                   </div>
 
                   <div className="flex-1 p-6 space-y-4 overflow-y-auto bg-slate-900/50">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center text-white shrink-0">
-                        <Bot className="w-4 h-4" />
+                    {chatHistory.map((msg, idx) => (
+                      <div key={idx} className={`flex items-start gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
+                        {msg.role === 'bot' && (
+                          <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center text-white shrink-0">
+                            <Bot className="w-4 h-4" />
+                          </div>
+                        )}
+                        <div className={`${msg.role === 'bot' ? 'bg-slate-800 rounded-tl-none text-slate-300' : 'bg-indigo-600 rounded-tr-none text-white'} p-4 rounded-2xl text-sm leading-relaxed max-w-[85%]`}>
+                          {msg.content}
+                        </div>
+                        {msg.role === 'user' && (
+                          <div className="w-8 h-8 bg-slate-700 rounded-lg flex items-center justify-center text-white shrink-0">
+                            <User className="w-4 h-4" />
+                          </div>
+                        )}
                       </div>
-                      <div className="bg-slate-800 p-4 rounded-2xl rounded-tl-none text-sm text-slate-300 leading-relaxed">
-                        Hello Alex! I've analyzed your progress. You're just 2 modules away from completing your AI Strategy certification. How can I help you today?
+                    ))}
+                    {isChatLoading && (
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center text-white shrink-0">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        </div>
+                        <div className="bg-slate-800 p-4 rounded-2xl rounded-tl-none text-sm text-slate-300 italic">
+                          Thinking...
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-start gap-3 justify-end">
-                      <div className="bg-indigo-600 p-4 rounded-2xl rounded-tr-none text-sm text-white leading-relaxed">
-                        What's the best way to explain my transition to AI in an interview?
-                      </div>
-                      <div className="w-8 h-8 bg-slate-700 rounded-lg flex items-center justify-center text-white shrink-0">
-                        <User className="w-4 h-4" />
-                      </div>
-                    </div>
+                    )}
                   </div>
 
                   <div className="p-6 bg-slate-800">
@@ -504,10 +549,15 @@ export default function Dashboard({ careerData, userProfile, roleMatches, select
                         type="text"
                         value={chatMessage}
                         onChange={(e) => setChatMessage(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                         placeholder="Ask your mentor..."
                         className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-3 pl-4 pr-12 text-sm focus:outline-none focus:border-indigo-500 transition-colors"
                       />
-                      <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition-colors">
+                      <button 
+                        onClick={handleSendMessage}
+                        disabled={isChatLoading}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition-colors disabled:opacity-50"
+                      >
                         <Send className="w-4 h-4" />
                       </button>
                     </div>
