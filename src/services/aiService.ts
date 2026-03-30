@@ -33,6 +33,24 @@ export interface GapAnalysisResult {
   skillsMissing: string[];
   transferableSkills: string[];
   priorityFocus: string[];
+  reframedExperience: {
+    past: string;
+    mapsTo: string;
+  }[];
+}
+
+export interface ExecutionPlan {
+  days: {
+    day: number;
+    task: string;
+    tools: string[];
+    output: string;
+    timeEstimate: string;
+  }[];
+  finalDeliverables: {
+    project: string;
+    resumeBullet: string;
+  };
 }
 
 export interface UpskillRecommendation {
@@ -209,17 +227,91 @@ export const aiService = {
       model: "gemini-3-flash-preview",
       contents: `Current Skills: ${currentSkills.join(", ")}\nTarget Role: ${targetRole}`,
       config: {
-        systemInstruction: "You are an AI Career Transformation Strategist. Compare this user profile with the target role. Focus on identifying high-impact TRANSFERABLE SKILLS and the most critical gaps that can be bridged quickly. Return: Skills they have, Skills missing, Transferable skills, and the top 3 Priority learning areas in the priorityFocus field.",
+        systemInstruction: `You are an AI Career Transformation Strategist. Compare the user's current skills with the target role.
+        
+        Return:
+        1. Transferable Skills: Rename them in an AI context (e.g., 'Project Management' -> 'AI Lifecycle Orchestration').
+        2. Missing Skills: List ONLY the most critical ones (max 5).
+        3. Reframed Experience: Show how their past specifically maps to the new role.
+        
+        IMPORTANT:
+        - Do NOT list more than 5 missing skills.
+        - Reframe EVERYTHING positively. Focus on the strength of their existing background.`,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
           properties: {
             skillsHave: { type: Type.ARRAY, items: { type: Type.STRING } },
-            skillsMissing: { type: Type.ARRAY, items: { type: Type.STRING } },
-            transferableSkills: { type: Type.ARRAY, items: { type: Type.STRING } },
-            priorityFocus: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Priority learning areas" }
+            skillsMissing: { type: Type.ARRAY, items: { type: Type.STRING }, maxItems: 5 },
+            transferableSkills: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Skills renamed in AI context" },
+            priorityFocus: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Top 3 priority learning areas" },
+            reframedExperience: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  past: { type: Type.STRING, description: "Original experience/skill" },
+                  mapsTo: { type: Type.STRING, description: "How it translates to the AI role" }
+                },
+                required: ["past", "mapsTo"]
+              }
+            }
           },
-          required: ["skillsHave", "skillsMissing", "transferableSkills", "priorityFocus"]
+          required: ["skillsHave", "skillsMissing", "transferableSkills", "priorityFocus", "reframedExperience"]
+        }
+      }
+    });
+    return JSON.parse(response.text || "{}");
+  },
+
+  async generateExecutionPlan(profile: ParsedProfile, targetRole: string, gaps: string[]): Promise<ExecutionPlan> {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `Profile: ${JSON.stringify(profile)}\nTarget Role: ${targetRole}\nSkill Gaps: ${gaps.join(", ")}`,
+      config: {
+        systemInstruction: `You are an AI Career Transformation Strategist. Create a 7-day rapid execution plan to move the user toward the selected role.
+        
+        Each day must include:
+        - Task (clear and short)
+        - Tool(s) to use
+        - Output (what they will produce)
+        - Time estimate (MUST be under 2 hours)
+        
+        Day 7 MUST produce:
+        - A portfolio-ready project
+        - At least 1 resume bullet
+        
+        Focus on high-ROI actions that leverage their existing background. Return structured JSON.`,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            days: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  day: { type: Type.NUMBER },
+                  task: { type: Type.STRING },
+                  tools: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  output: { type: Type.STRING },
+                  timeEstimate: { type: Type.STRING }
+                },
+                required: ["day", "task", "tools", "output", "timeEstimate"]
+              },
+              minItems: 7,
+              maxItems: 7
+            },
+            finalDeliverables: {
+              type: Type.OBJECT,
+              properties: {
+                project: { type: Type.STRING },
+                resumeBullet: { type: Type.STRING }
+              },
+              required: ["project", "resumeBullet"]
+            }
+          },
+          required: ["days", "finalDeliverables"]
         }
       }
     });

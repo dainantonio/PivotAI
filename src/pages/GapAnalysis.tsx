@@ -81,8 +81,9 @@ export default function GapAnalysis({ profile, targetRole, onNext, onBack }: Gap
             <div className="bg-emerald-50 p-2 rounded-xl">
               <CheckCircle2 className="w-6 h-6 text-emerald-600" />
             </div>
-            <h3 className="text-xl font-black text-slate-900 tracking-tight">Skills You Have</h3>
+            <h3 className="text-xl font-black text-slate-900 tracking-tight">Core DNA</h3>
           </div>
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-4">Your Existing Foundation</p>
           <div className="flex flex-wrap gap-2">
             {gapData?.skillsHave.map(skill => (
               <span key={skill} className="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-bold border border-emerald-100">
@@ -98,8 +99,9 @@ export default function GapAnalysis({ profile, targetRole, onNext, onBack }: Gap
             <div className="bg-red-50 p-2 rounded-xl">
               <AlertCircle className="w-6 h-6 text-red-600" />
             </div>
-            <h3 className="text-xl font-black text-slate-900 tracking-tight">Skills Missing</h3>
+            <h3 className="text-xl font-black text-slate-900 tracking-tight">Critical Gaps</h3>
           </div>
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-4">Top 5 Priority Skills</p>
           <div className="flex flex-wrap gap-2">
             {gapData?.skillsMissing.map(skill => (
               <span key={skill} className="px-4 py-2 bg-red-50 text-red-700 rounded-xl text-xs font-bold border border-red-100">
@@ -115,8 +117,9 @@ export default function GapAnalysis({ profile, targetRole, onNext, onBack }: Gap
             <div className="bg-blue-50 p-2 rounded-xl">
               <Zap className="w-6 h-6 text-blue-600" />
             </div>
-            <h3 className="text-xl font-black text-slate-900 tracking-tight">Transferable</h3>
+            <h3 className="text-xl font-black text-slate-900 tracking-tight">AI-Renamed Skills</h3>
           </div>
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-4">Transferable Strengths</p>
           <div className="flex flex-wrap gap-2">
             {gapData?.transferableSkills.map(skill => (
               <span key={skill} className="px-4 py-2 bg-blue-50 text-blue-700 rounded-xl text-xs font-bold border border-blue-100">
@@ -126,6 +129,38 @@ export default function GapAnalysis({ profile, targetRole, onNext, onBack }: Gap
           </div>
         </div>
       </div>
+
+      {/* Reframed Experience Section */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-indigo-50/50 rounded-[3rem] p-10 border border-indigo-100 mb-16"
+      >
+        <div className="flex items-center gap-3 mb-10">
+          <div className="bg-indigo-600 p-2 rounded-xl">
+            <BrainCircuit className="w-6 h-6 text-white" />
+          </div>
+          <h3 className="text-2xl font-black text-slate-900 tracking-tight">Reframed Experience</h3>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {gapData?.reframedExperience.map((item, i) => (
+            <div key={i} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col gap-4">
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Your Past Experience</span>
+                <p className="text-sm font-bold text-slate-900">{item.past}</p>
+              </div>
+              <div className="flex items-center justify-center py-2">
+                <ArrowRight className="w-5 h-5 text-indigo-400" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">AI Context Reframe</span>
+                <p className="text-sm text-slate-600 leading-relaxed italic">"{item.mapsTo}"</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
 
       {/* Priority Skills Section */}
       <div className="bg-slate-900 rounded-[3rem] p-10 text-white mb-12 relative overflow-hidden shadow-2xl shadow-slate-200">
