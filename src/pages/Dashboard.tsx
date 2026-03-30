@@ -26,7 +26,7 @@ type EngineState = 'idle' | 'loading' | 'results';
 interface DashboardProps {
   careerData: CareerPath | null;
   setCareerData: (data: CareerPath | null) => void;
-  setView: (view: 'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings' | 'job-matches' | 'skill-gap') => void;
+  setView: (view: 'landing' | 'auth' | 'dashboard' | 'experience' | 'matching' | 'gap-analysis' | 'upskill' | 'resume-portfolio' | 'settings') => void;
 }
 
 export default function Dashboard({ careerData, setCareerData, setView }: DashboardProps) {
@@ -149,42 +149,14 @@ export default function Dashboard({ careerData, setCareerData, setView }: Dashbo
               <div className="bg-blue-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-8">
                 <ShieldAlert className="w-8 h-8 text-blue-600" />
               </div>
-              <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">What do you do today?</h2>
-              <p className="text-slate-500 mb-10">Enter your current role to assess AI displacement risk and discover your optimal career pivot.</p>
+              <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">Bridge your AI Career</h2>
+              <p className="text-slate-500 mb-10">Start your journey by building your experience profile and discovering your optimal career pivot.</p>
               
-              <div className="space-y-4 mb-10">
-                <div className="text-left">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-4 mb-2 block">Current Role Title</label>
-                  <input 
-                    type="text" 
-                    value={currentRole}
-                    onChange={(e) => setCurrentRole(e.target.value)}
-                    placeholder="e.g. Marketing Copywriter"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                  />
-                </div>
-                <div className="text-left">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-4 mb-2 block">Industry</label>
-                  <input 
-                    type="text" 
-                    value={industry}
-                    onChange={(e) => setIndustry(e.target.value)}
-                    placeholder="e.g. Advertising & Media"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                  />
-                </div>
-              </div>
-
-              {error && (
-                <p className="text-red-500 text-xs font-bold mb-4">{error}</p>
-              )}
-
               <button 
-                onClick={handleAnalyze}
-                disabled={!currentRole.trim() || !industry.trim()}
-                className="w-full bg-blue-600 text-white py-5 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-[0.98] disabled:opacity-50 disabled:shadow-none"
+                onClick={() => setView('experience')}
+                className="w-full bg-blue-600 text-white py-5 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-[0.98]"
               >
-                Analyze Career Risk
+                Start Career Bridge
               </button>
             </div>
           </motion.div>
@@ -317,7 +289,7 @@ export default function Dashboard({ careerData, setCareerData, setView }: Dashbo
                   </div>
 
                   <button 
-                    onClick={() => setView('curriculum')}
+                    onClick={() => setView('upskill')}
                     className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 hover:bg-blue-500 transition-all group/btn"
                   >
                     Start Learning Path
@@ -337,7 +309,7 @@ export default function Dashboard({ careerData, setCareerData, setView }: Dashbo
                     <h3 className="text-xl font-black text-slate-900">Current vs. Target</h3>
                   </div>
                   <button 
-                    onClick={() => setView('skill-gap')}
+                    onClick={() => setView('gap-analysis')}
                     className="text-xs font-black text-blue-600 uppercase tracking-widest hover:text-blue-700 transition-colors flex items-center gap-1"
                   >
                     View Details
@@ -384,34 +356,34 @@ export default function Dashboard({ careerData, setCareerData, setView }: Dashbo
             {/* Quick Actions */}
             <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <button 
-                onClick={() => setView('resume')}
+                onClick={() => setView('resume-portfolio')}
                 className="p-8 bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-left group"
               >
                 <div className="bg-blue-50 w-12 h-12 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white transition-all">
                   <Zap className="w-6 h-6" />
                 </div>
-                <h4 className="text-lg font-black text-slate-900 mb-2">Optimize Resume</h4>
-                <p className="text-sm text-slate-500">Rewrite your experience for {careerData?.recommendedPivot}.</p>
+                <h4 className="text-lg font-black text-slate-900 mb-2">Resume & Portfolio</h4>
+                <p className="text-sm text-slate-500">Showcase your new AI competencies.</p>
               </button>
               <button 
-                onClick={() => setView('interview')}
+                onClick={() => setView('upskill')}
                 className="p-8 bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-left group"
               >
                 <div className="bg-purple-50 w-12 h-12 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-purple-600 group-hover:text-white transition-all">
                   <Target className="w-6 h-6" />
                 </div>
-                <h4 className="text-lg font-black text-slate-900 mb-2">Practice Interview</h4>
-                <p className="text-sm text-slate-500">Mock technical interview with Coach Atlas.</p>
+                <h4 className="text-lg font-black text-slate-900 mb-2">Upskill Plan</h4>
+                <p className="text-sm text-slate-500">Continue your learning journey.</p>
               </button>
               <button 
-                onClick={() => setView('job-matches')}
+                onClick={() => setView('experience')}
                 className="p-8 bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition-all text-left group"
               >
                 <div className="bg-emerald-50 w-12 h-12 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-emerald-600 group-hover:text-white transition-all">
                   <Sparkles className="w-6 h-6" />
                 </div>
-                <h4 className="text-lg font-black text-slate-900 mb-2">Explore Jobs</h4>
-                <p className="text-sm text-slate-500">View AI-curated job matches for your pivot.</p>
+                <h4 className="text-lg font-black text-slate-900 mb-2">Experience Builder</h4>
+                <p className="text-sm text-slate-500">Update your professional profile.</p>
               </button>
             </motion.div>
           </motion.div>

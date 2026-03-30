@@ -33,10 +33,17 @@ import Settings from './pages/Settings';
 import JobMatches from './pages/JobMatches';
 import Auth from './pages/Auth';
 import SkillGapAnalysis from './pages/SkillGapAnalysis';
+import ExperienceBuilder from './pages/ExperienceBuilder';
+import RoleMatching from './pages/RoleMatching';
+import GapAnalysis from './pages/GapAnalysis';
+import UpskillPlan from './pages/UpskillPlan';
+import ResumePortfolio from './pages/ResumePortfolio';
+import StepIndicator from './components/StepIndicator';
 import { CareerPath } from './services/geminiService';
 
 export default function App() {
-  const [view, setView] = useState<'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings' | 'job-matches' | 'skill-gap'>('landing');
+  const [view, setView] = useState<'landing' | 'auth' | 'dashboard' | 'experience' | 'matching' | 'gap-analysis' | 'upskill' | 'resume-portfolio' | 'settings'>('landing');
+  const [wizardStep, setWizardStep] = useState(0);
   const [careerData, setCareerData] = useState<CareerPath | null>(() => {
     const saved = localStorage.getItem('pivotai_career_data');
     return saved ? JSON.parse(saved) : null;
@@ -63,25 +70,57 @@ export default function App() {
   if (view === 'auth') {
     return (
       <Auth 
-        onLogin={() => setView('dashboard')} 
+        onLogin={() => setView('experience')} 
         onBack={() => setView('landing')} 
       />
     );
   }
 
-  if (view === 'dashboard' || view === 'resume' || view === 'interview' || view === 'learning' || view === 'curriculum' || view === 'portfolio' || view === 'community' || view === 'settings' || view === 'job-matches' || view === 'skill-gap') {
+  const wizardSteps = [
+    { id: 'experience', title: 'Experience' },
+    { id: 'matching', title: 'Matching' },
+    { id: 'gap-analysis', title: 'Gap Analysis' },
+    { id: 'upskill', title: 'Upskill' },
+    { id: 'resume-portfolio', title: 'Profile' }
+  ];
+
+  const handleNextStep = () => {
+    if (wizardStep < wizardSteps.length - 1) {
+      const nextStep = wizardStep + 1;
+      setWizardStep(nextStep);
+      setView(wizardSteps[nextStep].id as any);
+    } else {
+      setView('dashboard');
+    }
+  };
+
+  const handlePrevStep = () => {
+    if (wizardStep > 0) {
+      const prevStep = wizardStep - 1;
+      setWizardStep(prevStep);
+      setView(wizardSteps[prevStep].id as any);
+    } else {
+      setView('landing');
+    }
+  };
+
+  if (view === 'dashboard' || view === 'experience' || view === 'matching' || view === 'gap-analysis' || view === 'upskill' || view === 'resume-portfolio' || view === 'settings') {
+    const isWizardView = ['experience', 'matching', 'gap-analysis', 'upskill', 'resume-portfolio'].includes(view);
+
     return (
       <AppShell currentView={view} setView={setView}>
+        {isWizardView && (
+          <div className="pt-8 pb-12">
+            <StepIndicator steps={wizardSteps} currentStepIndex={wizardStep} />
+          </div>
+        )}
         {view === 'dashboard' && <Dashboard careerData={careerData} setCareerData={setCareerData} setView={setView} />}
-        {view === 'job-matches' && <JobMatches careerData={careerData} />}
-        {view === 'resume' && <ResumeOptimizer careerData={careerData} />}
-        {view === 'interview' && <InterviewSimulator careerData={careerData} setView={setView} />}
-        {view === 'learning' && <LearningHub setView={setView} />}
-        {view === 'curriculum' && <CurriculumPlayer careerData={careerData} />}
-        {view === 'portfolio' && <PortfolioBuilder careerData={careerData} />}
-        {view === 'community' && <CommunityNetwork />}
+        {view === 'experience' && <ExperienceBuilder onNext={handleNextStep} />}
+        {view === 'matching' && <RoleMatching onNext={handleNextStep} onBack={handlePrevStep} />}
+        {view === 'gap-analysis' && <GapAnalysis onNext={handleNextStep} onBack={handlePrevStep} />}
+        {view === 'upskill' && <UpskillPlan onNext={handleNextStep} onBack={handlePrevStep} />}
+        {view === 'resume-portfolio' && <ResumePortfolio onNext={handleNextStep} onBack={handlePrevStep} />}
         {view === 'settings' && <Settings />}
-        {view === 'skill-gap' && <SkillGapAnalysis careerData={careerData} setView={setView} />}
       </AppShell>
     );
   }
@@ -102,7 +141,7 @@ export default function App() {
               <div className="bg-indigo-600 p-1.5 rounded-lg group-hover:rotate-12 transition-transform">
                 <BrainCircuit className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl font-bold tracking-tight text-slate-900">PivotAI</span>
+              <span className="text-xl font-bold tracking-tight text-slate-900">Career Bridge</span>
             </div>
 
             {/* Desktop Nav */}
@@ -202,9 +241,9 @@ export default function App() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight text-slate-900 mb-8 leading-[1.1]"
           >
-            The Operating System for <br />
+            Bridge the <br />
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600">
-              Workforce Intelligence
+              AI Career Gap
             </span>
           </motion.h1>
 
@@ -214,7 +253,7 @@ export default function App() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="max-w-2xl mx-auto text-lg md:text-xl text-slate-600 mb-10 leading-relaxed"
           >
-            Empower your enterprise with predictive analytics, real-time skill mapping, and automated career pathing. PivotAI is the foundation for the future of work.
+            Empower your transition with AI-driven skill mapping, personalized role matching, and micro-upskilling. AI Career Bridge is your path to the future of work.
           </motion.p>
 
           <motion.div 

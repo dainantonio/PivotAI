@@ -16,14 +16,15 @@ import {
   LogOut,
   Sparkles,
   Users,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  BarChart3
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface AppShellProps {
   children: React.ReactNode;
-  currentView: 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings' | 'job-matches' | 'skill-gap';
-  setView: (view: 'landing' | 'auth' | 'dashboard' | 'resume' | 'interview' | 'learning' | 'curriculum' | 'portfolio' | 'community' | 'settings' | 'job-matches' | 'skill-gap') => void;
+  currentView: 'dashboard' | 'experience' | 'matching' | 'gap-analysis' | 'upskill' | 'resume-portfolio' | 'settings';
+  setView: (view: 'landing' | 'auth' | 'dashboard' | 'experience' | 'matching' | 'gap-analysis' | 'upskill' | 'resume-portfolio' | 'settings') => void;
 }
 
 const NavItem = ({ 
@@ -88,7 +89,7 @@ export default function AppShell({ children, currentView, setView }: AppShellPro
             <div className="bg-blue-600 p-1.5 rounded-lg">
               <BrainCircuit className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold tracking-tight text-white">PivotAI</span>
+            <span className="text-xl font-bold tracking-tight text-white">Career Bridge</span>
           </div>
 
           {/* Navigation */}
@@ -98,63 +99,45 @@ export default function AppShell({ children, currentView, setView }: AppShellPro
               <nav className="space-y-1">
                 <NavItem 
                   icon={LayoutDashboard} 
-                  label="Overview" 
+                  label="Dashboard" 
                   isActive={currentView === 'dashboard'} 
                   onClick={() => { setView('dashboard'); setIsSidebarOpen(false); }}
                 />
                 <NavItem 
-                  icon={Target} 
-                  label="Skill Gap" 
-                  isActive={currentView === 'skill-gap'} 
-                  onClick={() => { setView('skill-gap'); setIsSidebarOpen(false); }}
-                />
-                <NavItem 
                   icon={Briefcase} 
-                  label="Job Matches" 
-                  isActive={currentView === 'job-matches'} 
-                  onClick={() => { setView('job-matches'); setIsSidebarOpen(false); }}
+                  label="Experience" 
+                  isActive={currentView === 'experience'} 
+                  onClick={() => { setView('experience'); setIsSidebarOpen(false); }}
                 />
                 <NavItem 
-                  icon={Users} 
-                  label="Community" 
-                  isActive={currentView === 'community'} 
-                  onClick={() => { setView('community'); setIsSidebarOpen(false); }}
+                  icon={Target} 
+                  label="Role Matching" 
+                  isActive={currentView === 'matching'} 
+                  onClick={() => { setView('matching'); setIsSidebarOpen(false); }}
+                />
+                <NavItem 
+                  icon={BarChart3} 
+                  label="Gap Analysis" 
+                  isActive={currentView === 'gap-analysis'} 
+                  onClick={() => { setView('gap-analysis'); setIsSidebarOpen(false); }}
                 />
                 <NavItem 
                   icon={BookOpen} 
-                  label="Curriculum" 
-                  isActive={currentView === 'curriculum'} 
-                  onClick={() => { setView('curriculum'); setIsSidebarOpen(false); }}
+                  label="Upskill Plan" 
+                  isActive={currentView === 'upskill'} 
+                  onClick={() => { setView('upskill'); setIsSidebarOpen(false); }}
                 />
                 <NavItem 
                   icon={User} 
-                  label="Portfolio" 
-                  isActive={currentView === 'portfolio'} 
-                  onClick={() => { setView('portfolio'); setIsSidebarOpen(false); }}
+                  label="Resume & Portfolio" 
+                  isActive={currentView === 'resume-portfolio'} 
+                  onClick={() => { setView('resume-portfolio'); setIsSidebarOpen(false); }}
                 />
                 <NavItem 
                   icon={SettingsIcon} 
                   label="Settings" 
                   isActive={currentView === 'settings'} 
                   onClick={() => { setView('settings'); setIsSidebarOpen(false); }}
-                />
-              </nav>
-            </div>
-
-            <div>
-              <p className="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Tools</p>
-              <nav className="space-y-1">
-                <NavItem 
-                  icon={FileText} 
-                  label="Resume Optimizer" 
-                  isActive={currentView === 'resume'} 
-                  onClick={() => { setView('resume'); setIsSidebarOpen(false); }}
-                />
-                <NavItem 
-                  icon={Mic2} 
-                  label="Interview Simulator" 
-                  isActive={currentView === 'interview'} 
-                  onClick={() => { setView('interview'); setIsSidebarOpen(false); }}
                 />
               </nav>
             </div>
