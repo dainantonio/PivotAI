@@ -3,8 +3,13 @@ import { GoogleGenAI, Type, ThinkingLevel } from "@google/genai";
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 export interface ParsedProfile {
+  currentRole: string;
+  industry: string;
   skills: string[];
   tools: string[];
+  yearsOfExperience: string;
+  repetitiveTasks: string[];
+  decisionMakingLevel: string;
   experience: {
     title: string;
     company: string;
@@ -17,8 +22,10 @@ export interface ParsedProfile {
 export interface RoleMatch {
   role: string;
   matchPercentage: number;
-  keySkills: string[];
   description: string;
+  credibility: string;
+  salaryRange?: string;
+  keySkills: string[];
 }
 
 export interface GapAnalysisResult {
@@ -34,10 +41,13 @@ export interface UpskillRecommendation {
     platform: string;
     duration: string;
     isFree: boolean;
+    pairedProject: string;
   }[];
   projects: {
     name: string;
     description: string;
+    tools: string[];
+    outcome: string;
   }[];
   certificates: {
     name: string;
@@ -101,15 +111,30 @@ export const aiService = {
   async parseExperience(text: string): Promise<ParsedProfile> {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Resume/Job Description Text: ${text}`,
+      contents: `User Input/Resume: ${text}`,
       config: {
-        systemInstruction: "Analyze the following experience and extract: Skills, Tools, Key responsibilities, Achievements. Return structured JSON.",
+        systemInstruction: `Analyze the following user input and extract:
+        - Current Role
+        - Industry
+        - Key Skills (technical + soft)
+        - Tools Used
+        - Years of Experience (estimate if needed)
+        - Repetitive Tasks (automation opportunities)
+        - Decision-Making Level
+        - Detailed Experience History
+        
+        If missing information, infer intelligently based on the context. Return structured JSON.`,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            skills: { type: Type.ARRAY, items: { type: Type.STRING } },
+            currentRole: { type: Type.STRING },
+            industry: { type: Type.STRING },
+            skills: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Combined technical and soft skills" },
             tools: { type: Type.ARRAY, items: { type: Type.STRING } },
+            yearsOfExperience: { type: Type.STRING },
+            repetitiveTasks: { type: Type.ARRAY, items: { type: Type.STRING } },
+            decisionMakingLevel: { type: Type.STRING },
             experience: {
               type: Type.ARRAY,
               items: {
@@ -125,7 +150,7 @@ export const aiService = {
               }
             }
           },
-          required: ["skills", "tools", "experience"]
+          required: ["currentRole", "industry", "skills", "tools", "yearsOfExperience", "repetitiveTasks", "decisionMakingLevel", "experience"]
         }
       }
     });
@@ -137,7 +162,20 @@ export const aiService = {
       model: "gemini-3-flash-preview",
       contents: `Current Profile: ${JSON.stringify(profile)}`,
       config: {
-        systemInstruction: "Given this experience, match it to AI-related roles. Return exactly 5 roles with match percentage and reasoning in the description field.",
+        systemInstruction: `You are an AI Career Transformation Strategist. Based on the user's background, identify the TOP 3 AI-adjacent roles they can realistically transition into within 30–90 days.
+        
+        Rules:
+        - MUST leverage existing skills
+        - MUST NOT require advanced coding unless already present
+        - MUST be in-demand roles
+        
+        For each role, return:
+        - Role Title
+        - Match Score (0–100)
+        - Why it's a strong match (specific) in the description field
+        - What makes them credible TODAY (important) in the credibility field
+        - Salary range (optional) in the salaryRange field
+        - Key skills required for the role`,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -149,11 +187,14 @@ export const aiService = {
                 properties: {
                   role: { type: Type.STRING },
                   matchPercentage: { type: Type.NUMBER },
-                  keySkills: { type: Type.ARRAY, items: { type: Type.STRING } },
-                  description: { type: Type.STRING, description: "Reasoning for the match" }
+                  description: { type: Type.STRING, description: "Why it's a strong match" },
+                  credibility: { type: Type.STRING, description: "What makes them credible TODAY" },
+                  salaryRange: { type: Type.STRING },
+                  keySkills: { type: Type.ARRAY, items: { type: Type.STRING } }
                 },
-                required: ["role", "matchPercentage", "keySkills", "description"]
-              }
+                required: ["role", "matchPercentage", "description", "credibility", "keySkills"]
+              },
+              maxItems: 3
             }
           },
           required: ["matches"]
@@ -168,7 +209,7 @@ export const aiService = {
       model: "gemini-3-flash-preview",
       contents: `Current Skills: ${currentSkills.join(", ")}\nTarget Role: ${targetRole}`,
       config: {
-        systemInstruction: "Compare this user profile with this target role. Return: Skills they have, Skills missing, Transferable skills, Priority learning areas in the priorityFocus field.",
+        systemInstruction: "You are an AI Career Transformation Strategist. Compare this user profile with the target role. Focus on identifying high-impact TRANSFERABLE SKILLS and the most critical gaps that can be bridged quickly. Return: Skills they have, Skills missing, Transferable skills, and the top 3 Priority learning areas in the priorityFocus field.",
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -190,7 +231,7 @@ export const aiService = {
       model: "gemini-3-flash-preview",
       contents: `Skill Gaps: ${gaps.join(", ")}\nTarget Role: ${targetRole}`,
       config: {
-        systemInstruction: "Based on missing skills, generate: 1. 2–3 short courses (free or paid), 2. 1–2 practical projects, 3. Optional certification suggestions in the certificates field. Keep it concise and actionable.",
+        systemInstruction: "You are an AI Career Transformation Strategist. Based on missing skills, generate exactly 3 high-impact actions: 1. 2-3 short courses (Coursera, Udemy, edX, Google) ALWAYS paired with a specific PROJECT, 2. 1-2 practical resume-ready projects with specific tools (ChatGPT, Excel, Python, etc.) and clear outcomes, 3. Optional high-ROI certifications. Every recommendation must result in something the user can add to their resume within 7 days. Avoid generic advice.",
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -203,10 +244,12 @@ export const aiService = {
                   title: { type: Type.STRING },
                   platform: { type: Type.STRING },
                   duration: { type: Type.STRING },
-                  isFree: { type: Type.BOOLEAN }
+                  isFree: { type: Type.BOOLEAN },
+                  pairedProject: { type: Type.STRING, description: "A specific project to complete alongside this course" }
                 },
-                required: ["title", "platform", "duration", "isFree"]
-              }
+                required: ["title", "platform", "duration", "isFree", "pairedProject"]
+              },
+              maxItems: 3
             },
             projects: {
               type: Type.ARRAY,
@@ -214,10 +257,13 @@ export const aiService = {
                 type: Type.OBJECT,
                 properties: {
                   name: { type: Type.STRING },
-                  description: { type: Type.STRING }
+                  description: { type: Type.STRING },
+                  tools: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Specific tools used (e.g., ChatGPT, Excel, Python)" },
+                  outcome: { type: Type.STRING, description: "Clear, tangible outcome for the resume" }
                 },
-                required: ["name", "description"]
-              }
+                required: ["name", "description", "tools", "outcome"]
+              },
+              maxItems: 2
             },
             certificates: {
               type: Type.ARRAY,
@@ -228,7 +274,8 @@ export const aiService = {
                   progress: { type: Type.NUMBER, description: "Estimated progress if they started today (usually 0)" }
                 },
                 required: ["name", "progress"]
-              }
+              },
+              maxItems: 1
             }
           },
           required: ["courses", "projects", "certificates"]
@@ -243,7 +290,7 @@ export const aiService = {
       model: "gemini-3-flash-preview",
       contents: `Profile: ${JSON.stringify(profile)}\nTarget Role: ${targetRole}`,
       config: {
-        systemInstruction: "Rewrite this experience to align with the target role. Use strong action verbs, add data/impact language, and make it ATS-friendly. Return a complete profile including resume sections, cover letter, and LinkedIn optimization.",
+        systemInstruction: "You are an AI Career Transformation Strategist. Rewrite this experience to align with the target role. Use strong action verbs, add data/impact language, and make it ATS-friendly. Focus on TRANSFERABLE SKILLS and AI-readiness. Return a complete profile including resume sections, cover letter, and LinkedIn optimization.",
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -347,7 +394,7 @@ export const aiService = {
       model: "gemini-3-flash-preview",
       contents: `Current Role: ${currentRole}\nIndustry: ${industry}`,
       config: {
-        systemInstruction: "You are an AI Career Strategist. Calculate the user's risk of AI automation, identify 4 transferable skills, and recommend the best tech-adjacent pivot role. Perform a detailed skill gap analysis comparing their current role to the future needs of the pivot role. Finally, generate a 3-module learning syllabus.",
+        systemInstruction: "You are an AI Career Transformation Strategist. Calculate AI displacement risk, identify 4 key transferable skills, and recommend a high-ROI AI-adjacent pivot. Perform a gap analysis and generate a 3-module syllabus designed for rapid 7-day progress. Focus on specific tools and tangible deliverables.",
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,

@@ -167,14 +167,14 @@ export default function Dashboard({ careerData, userProfile, roleMatches, select
               <div className="bg-indigo-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-8">
                 <ShieldAlert className="w-8 h-8 text-indigo-600" />
               </div>
-              <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">Bridge your AI Career</h2>
-              <p className="text-slate-500 mb-10">Start your journey by building your experience profile and discovering your optimal career pivot.</p>
+              <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">AI Career Transformation</h2>
+              <p className="text-slate-500 mb-10">I am your AI Career Transformation Strategist. Let's convert your background into a high-ROI, AI-adjacent career path in 7 days.</p>
               
               <button 
                 onClick={() => setView('experience')}
                 className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-[0.98]"
               >
-                Start Career Bridge
+                Start Transformation
               </button>
             </div>
           </motion.div>
@@ -221,8 +221,15 @@ export default function Dashboard({ careerData, userProfile, roleMatches, select
             <motion.div variants={itemVariants} className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
                 <div>
-                  <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-1">Career Control Center</h2>
-                  <p className="text-slate-500 font-medium">Targeting: <span className="text-indigo-600 font-bold">{selectedRole?.role || 'AI Product Strategist'}</span></p>
+                  <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-1">Transformation Strategist</h2>
+                  <div className="flex flex-col gap-1">
+                    <p className="text-slate-500 font-medium text-sm">
+                      From: <span className="text-slate-900 font-bold">{userProfile?.currentRole || 'Marketing Manager'}</span> in <span className="text-slate-900 font-bold">{userProfile?.industry || 'Retail'}</span>
+                    </p>
+                    <p className="text-slate-500 font-medium text-sm">
+                      Targeting: <span className="text-indigo-600 font-bold">{selectedRole?.role || 'AI Product Strategist'}</span>
+                    </p>
+                  </div>
                 </div>
                 <div className="flex items-center gap-6">
                   <div className="text-right">
@@ -339,6 +346,30 @@ export default function Dashboard({ careerData, userProfile, roleMatches, select
                         />
                       </RadarChart>
                     </ResponsiveContainer>
+                  </div>
+                </motion.div>
+
+                {/* Job Alerts */}
+                <motion.div variants={itemVariants} className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                  <div className="flex justify-between items-center mb-8">
+                    <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                      <Zap className="w-5 h-5 text-amber-500" />
+                      Automation Quick Wins
+                    </h3>
+                    <span className="px-3 py-1 bg-amber-100 text-amber-600 text-[10px] font-black uppercase tracking-widest rounded-full">AI Efficiency</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {(userProfile?.repetitiveTasks || ['Data Entry', 'Report Generation', 'Email Sorting']).map((task, idx) => (
+                      <div key={idx} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3">
+                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-amber-500 border border-slate-200">
+                          <Bot className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-black text-slate-900">{task}</p>
+                          <p className="text-[10px] text-slate-500 font-bold">Automate with LLM Agents</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </motion.div>
 

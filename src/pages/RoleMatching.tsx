@@ -56,7 +56,7 @@ export default function RoleMatching({ profile, onNext, onBack }: RoleMatchingPr
         <p className="text-slate-500 text-lg">Based on your experience, we've identified the best tech-adjacent pivot roles for you.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
         {isLoading ? (
           <div className="col-span-full py-24 flex flex-col items-center justify-center text-slate-400">
             <Loader2 className="w-12 h-12 animate-spin mb-4" />
@@ -75,7 +75,7 @@ export default function RoleMatching({ profile, onNext, onBack }: RoleMatchingPr
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.1 }}
             onClick={() => setSelectedRoleId(role.role)}
-            className={`cursor-pointer p-8 rounded-[2.5rem] border-2 transition-all duration-300 relative overflow-hidden group ${
+            className={`cursor-pointer p-8 rounded-[2.5rem] border-2 transition-all duration-300 relative overflow-hidden flex flex-col h-full group ${
               selectedRoleId === role.role 
                 ? 'border-indigo-600 bg-indigo-50/50 shadow-2xl shadow-indigo-100 -translate-y-2' 
                 : 'border-slate-200 bg-white hover:border-indigo-300 hover:shadow-xl hover:-translate-y-1'
@@ -104,33 +104,32 @@ export default function RoleMatching({ profile, onNext, onBack }: RoleMatchingPr
               </div>
             </div>
 
-            <p className="text-sm text-slate-600 leading-relaxed mb-8 h-12 overflow-hidden">
-              {role.description}
-            </p>
-
-            <div className="space-y-4 mb-8">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-400 font-bold uppercase tracking-widest">Match Strength</span>
-                <span className="text-indigo-600 font-black">{role.matchPercentage}%</span>
+            <div className="flex-1">
+              <div className="mb-6">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Why it's a match</h4>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  {role.description}
+                </p>
               </div>
-              <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-indigo-600 rounded-full transition-all duration-1000"
-                  style={{ width: `${role.matchPercentage}%` }}
-                />
+
+              <div className="mb-6">
+                <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2">Credibility Today</h4>
+                <p className="text-sm text-slate-600 leading-relaxed italic">
+                  "{role.credibility}"
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-2 mb-8">
+                {role.keySkills.map(skill => (
+                  <span key={skill} className="px-3 py-1 bg-white border border-slate-200 text-slate-600 rounded-full text-[10px] font-bold">
+                    {skill}
+                  </span>
+                ))}
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2 mb-8">
-              {role.keySkills.map(skill => (
-                <span key={skill} className="px-3 py-1 bg-white border border-slate-200 text-slate-600 rounded-full text-[10px] font-bold">
-                  {skill}
-                </span>
-              ))}
-            </div>
-
-            <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
-              <span className="text-sm font-black text-slate-900">$140k - $200k</span>
+            <div className="pt-6 border-t border-slate-100 flex items-center justify-between mt-auto">
+              <span className="text-sm font-black text-slate-900">{role.salaryRange || '$140k - $200k'}</span>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Est. Salary</span>
             </div>
           </motion.div>

@@ -63,9 +63,9 @@ export default function UpskillPlan({ profile, targetRole, onNext, onBack }: Ups
   return (
     <div className="max-w-6xl mx-auto py-12 px-4">
       <div className="text-center mb-16">
-        <h1 className="text-4xl font-black text-slate-900 tracking-tight mb-4">Your Micro-Upskill Plan</h1>
+        <h1 className="text-4xl font-black text-slate-900 tracking-tight mb-4">7-Day <span className="text-indigo-600">Transformation</span> Plan</h1>
         <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-          We've curated these specific resources to help you bridge your identified skill gaps and prepare for your target AI role.
+          High-ROI actions curated by your AI Career Transformation Strategist. Focus on transferable skills and tangible results you can add to your resume within 7 days.
         </p>
       </div>
 
@@ -100,7 +100,11 @@ export default function UpskillPlan({ profile, targetRole, onNext, onBack }: Ups
                     </span>
                   </div>
                   <h3 className="text-lg font-black text-slate-900 mb-1 leading-tight">{course.title}</h3>
-                  <p className="text-slate-400 text-sm font-bold mb-4">{course.platform}</p>
+                  <p className="text-slate-400 text-sm font-bold mb-2">{course.platform}</p>
+                  <div className="mb-4 p-3 bg-indigo-50/50 rounded-xl border border-indigo-100/50">
+                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Paired Project</p>
+                    <p className="text-xs text-slate-600 font-medium leading-tight">{course.pairedProject}</p>
+                  </div>
                   <div className="flex items-center justify-between mt-auto">
                     <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
                       <Clock className="w-4 h-4" />
@@ -137,12 +141,19 @@ export default function UpskillPlan({ profile, targetRole, onNext, onBack }: Ups
                     <div className="flex-1">
                       <h3 className="text-xl font-black text-slate-900 mb-2">{project.name}</h3>
                       <p className="text-slate-500 text-sm leading-relaxed mb-4">{project.description}</p>
-                      <div className="flex flex-wrap gap-2">
-                        {['AI Strategy', 'Implementation', 'ROI'].map(skill => (
-                          <span key={skill} className="px-3 py-1 bg-slate-50 text-slate-500 text-[10px] font-bold rounded-lg border border-slate-100">
-                            {skill}
-                          </span>
-                        ))}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Tools</p>
+                          <div className="flex flex-wrap gap-2">
+                            {project.tools.map(tool => (
+                              <span key={tool} className="text-[10px] font-bold text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-100">{tool}</span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+                          <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Outcome</p>
+                          <p className="text-[10px] font-bold text-emerald-700 leading-tight">{project.outcome}</p>
+                        </div>
                       </div>
                     </div>
                     <button className="bg-slate-900 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-slate-800 transition-all shrink-0 self-start md:self-center">

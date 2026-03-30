@@ -36,6 +36,11 @@ export default function ExperienceBuilder({ onNext, onBack }: ExperienceBuilderP
   const [error, setError] = useState<string | null>(null);
   
   // Data States
+  const [currentRole, setCurrentRole] = useState('');
+  const [industry, setIndustry] = useState('');
+  const [yearsOfExperience, setYearsOfExperience] = useState('');
+  const [repetitiveTasks, setRepetitiveTasks] = useState<string[]>([]);
+  const [decisionMakingLevel, setDecisionMakingLevel] = useState('');
   const [skills, setSkills] = useState<string[]>([]);
   const [tools, setTools] = useState<string[]>([]);
   const [responsibilities, setResponsibilities] = useState<string[]>([]);
@@ -62,6 +67,11 @@ export default function ExperienceBuilder({ onNext, onBack }: ExperienceBuilderP
 
     try {
       const result = await aiService.parseExperience(text);
+      setCurrentRole(result.currentRole);
+      setIndustry(result.industry);
+      setYearsOfExperience(result.yearsOfExperience);
+      setRepetitiveTasks(result.repetitiveTasks);
+      setDecisionMakingLevel(result.decisionMakingLevel);
       setSkills(result.skills);
       setTools(result.tools);
       setExperience(result.experience);
@@ -148,10 +158,10 @@ export default function ExperienceBuilder({ onNext, onBack }: ExperienceBuilderP
       <div className="max-w-5xl mx-auto py-12 px-4">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-6">
-            How would you like to build your <span className="text-indigo-600">AI Profile?</span>
+            AI Career <span className="text-indigo-600">Transformation</span> Strategist
           </h1>
           <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-            We'll extract your core competencies and translate them into AI-ready skills.
+            I'll convert your background into a high-ROI, AI-adjacent career path. Let's start by extracting your core competencies.
           </p>
         </div>
 
@@ -402,6 +412,69 @@ export default function ExperienceBuilder({ onNext, onBack }: ExperienceBuilderP
             </div>
 
             <div className="p-8 space-y-10">
+              {/* Professional Overview */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Current Role</label>
+                  <input 
+                    type="text" 
+                    value={currentRole} 
+                    onChange={(e) => setCurrentRole(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:outline-none focus:border-indigo-500 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Industry</label>
+                  <input 
+                    type="text" 
+                    value={industry} 
+                    onChange={(e) => setIndustry(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:outline-none focus:border-indigo-500 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Years of Experience</label>
+                  <input 
+                    type="text" 
+                    value={yearsOfExperience} 
+                    onChange={(e) => setYearsOfExperience(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:outline-none focus:border-indigo-500 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Decision Level</label>
+                  <select 
+                    value={decisionMakingLevel} 
+                    onChange={(e) => setDecisionMakingLevel(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:outline-none focus:border-indigo-500 transition-all appearance-none"
+                  >
+                    <option value="Entry">Entry Level</option>
+                    <option value="Mid">Mid Level</option>
+                    <option value="Senior">Senior Level</option>
+                    <option value="Executive">Executive Level</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Repetitive Tasks */}
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">Repetitive Tasks (Automation Opportunities)</label>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {repetitiveTasks.map(task => (
+                    <span key={task} className="group flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 rounded-xl text-sm font-bold border border-amber-100">
+                      {task}
+                      <button onClick={() => setRepetitiveTasks(repetitiveTasks.filter(t => t !== task))} className="text-amber-300 hover:text-amber-600 transition-colors">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </span>
+                  ))}
+                  <button className="px-4 py-2 border-2 border-dashed border-slate-200 text-slate-400 rounded-xl text-sm font-bold hover:border-amber-300 hover:text-amber-600 transition-all flex items-center gap-2">
+                    <Plus className="w-4 h-4" />
+                    Add Task
+                  </button>
+                </div>
+              </div>
+
               {/* Skills */}
               <div>
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">Core Skills</label>
@@ -561,7 +634,16 @@ export default function ExperienceBuilder({ onNext, onBack }: ExperienceBuilderP
                           responsibilities: []
                         };
                       });
-                      onNext({ skills, tools, experience: updatedExperience });
+                      onNext({ 
+                        currentRole, 
+                        industry, 
+                        yearsOfExperience, 
+                        repetitiveTasks, 
+                        decisionMakingLevel, 
+                        skills, 
+                        tools, 
+                        experience: updatedExperience 
+                      });
                     }}
                     className="w-full bg-white text-indigo-900 px-8 py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-3 hover:bg-indigo-50 transition-all shadow-xl"
                   >
