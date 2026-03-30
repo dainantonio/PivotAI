@@ -57,20 +57,15 @@ export interface UpskillRecommendation {
   courses: {
     title: string;
     platform: string;
-    duration: string;
     isFree: boolean;
-    pairedProject: string;
+    whyChosen: string;
   }[];
-  projects: {
-    name: string;
-    description: string;
+  project: {
+    title: string;
     tools: string[];
-    outcome: string;
-  }[];
-  certificates: {
-    name: string;
-    progress: number;
-  }[];
+    finalDeliverable: string;
+    description: string;
+  };
 }
 
 export interface ResumeRewriteResult {
@@ -323,7 +318,22 @@ export const aiService = {
       model: "gemini-3-flash-preview",
       contents: `Skill Gaps: ${gaps.join(", ")}\nTarget Role: ${targetRole}`,
       config: {
-        systemInstruction: "You are an AI Career Transformation Strategist. Based on missing skills, generate exactly 3 high-impact actions: 1. 2-3 short courses (Coursera, Udemy, edX, Google) ALWAYS paired with a specific PROJECT, 2. 1-2 practical resume-ready projects with specific tools (ChatGPT, Excel, Python, etc.) and clear outcomes, 3. Optional high-ROI certifications. Every recommendation must result in something the user can add to their resume within 7 days. Avoid generic advice.",
+        systemInstruction: `You are an AI Career Transformation Strategist. Based on the user's skill gaps and target role, recommend:
+        1. Exactly 1 FREE course
+        2. Exactly 1 PAID course (high-ROI)
+        3. Exactly 1 PROJECT that directly applies what is learned in these courses.
+        
+        For each course, include:
+        - Course name + platform
+        - Why it's chosen (specific to the user's background)
+        
+        For the project, include:
+        - Project title
+        - Tools required
+        - Final deliverable (tangible, portfolio-ready)
+        - Description
+        
+        RULE: A course alone is NOT enough — the project must be the centerpiece of the recommendation.`,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -335,42 +345,26 @@ export const aiService = {
                 properties: {
                   title: { type: Type.STRING },
                   platform: { type: Type.STRING },
-                  duration: { type: Type.STRING },
                   isFree: { type: Type.BOOLEAN },
-                  pairedProject: { type: Type.STRING, description: "A specific project to complete alongside this course" }
+                  whyChosen: { type: Type.STRING }
                 },
-                required: ["title", "platform", "duration", "isFree", "pairedProject"]
+                required: ["title", "platform", "isFree", "whyChosen"]
               },
-              maxItems: 3
-            },
-            projects: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  name: { type: Type.STRING },
-                  description: { type: Type.STRING },
-                  tools: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Specific tools used (e.g., ChatGPT, Excel, Python)" },
-                  outcome: { type: Type.STRING, description: "Clear, tangible outcome for the resume" }
-                },
-                required: ["name", "description", "tools", "outcome"]
-              },
+              minItems: 2,
               maxItems: 2
             },
-            certificates: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  name: { type: Type.STRING },
-                  progress: { type: Type.NUMBER, description: "Estimated progress if they started today (usually 0)" }
-                },
-                required: ["name", "progress"]
+            project: {
+              type: Type.OBJECT,
+              properties: {
+                title: { type: Type.STRING },
+                tools: { type: Type.ARRAY, items: { type: Type.STRING } },
+                finalDeliverable: { type: Type.STRING },
+                description: { type: Type.STRING }
               },
-              maxItems: 1
+              required: ["title", "tools", "finalDeliverable", "description"]
             }
           },
-          required: ["courses", "projects", "certificates"]
+          required: ["courses", "project"]
         }
       }
     });
