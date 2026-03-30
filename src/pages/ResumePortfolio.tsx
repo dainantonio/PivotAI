@@ -188,16 +188,60 @@ export default function ResumePortfolio({ profile, targetRole, onNext, onBack }:
               )}
 
               {activeTab === 'projects' && resumeData && (
-                <div className="p-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-12 space-y-12">
                   {resumeData.projects.map((project, i) => (
-                    <div key={i} className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 hover:border-indigo-200 transition-all group">
-                      <h4 className="text-xl font-black text-slate-900 mb-3">{project.title}</h4>
-                      <p className="text-sm text-slate-500 leading-relaxed mb-6">{project.description}</p>
+                    <motion.div 
+                      key={i}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.1 }}
+                      className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 hover:border-indigo-200 transition-all group"
+                    >
+                      <div className="flex flex-col md:flex-row justify-between gap-6 mb-8">
+                        <div className="flex-1">
+                          <h4 className="text-2xl font-black text-slate-900 mb-2">{project.title}</h4>
+                          <p className="text-indigo-600 font-bold text-sm uppercase tracking-widest">Real-World Scenario</p>
+                          <p className="text-slate-600 leading-relaxed">{project.scenario}</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2 h-fit">
+                          {project.tools.map(tool => (
+                            <span key={tool} className="px-3 py-1 bg-white text-slate-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-slate-200">
+                              {tool}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-8">
+                        <div>
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Execution Steps</p>
+                          <ul className="space-y-4">
+                            {project.steps.map((step, j) => (
+                              <li key={j} className="flex gap-4 text-sm text-slate-600">
+                                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-black text-xs">
+                                  {j + 1}
+                                </span>
+                                {step}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="p-6 bg-white rounded-3xl border border-slate-200">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Final Output</p>
+                          <p className="text-sm font-bold text-slate-900 mb-6">{project.finalOutput}</p>
+                          
+                          <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">Resume Ready Bullet</p>
+                          <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 text-indigo-700 text-sm font-medium italic">
+                            "{project.resumeBullet}"
+                          </div>
+                        </div>
+                      </div>
+
                       <button className="flex items-center gap-2 text-indigo-600 font-bold text-sm group-hover:gap-3 transition-all">
-                        View Project
+                        View Full Project Details
                         <ExternalLink className="w-4 h-4" />
                       </button>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               )}

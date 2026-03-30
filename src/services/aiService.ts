@@ -83,7 +83,11 @@ export interface ResumeRewriteResult {
   };
   projects: {
     title: string;
-    description: string;
+    scenario: string;
+    tools: string[];
+    steps: string[];
+    finalOutput: string;
+    resumeBullet: string;
   }[];
 }
 
@@ -373,10 +377,21 @@ export const aiService = {
 
   async rewriteResume(profile: ParsedProfile, targetRole: string): Promise<ResumeRewriteResult> {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-3.1-pro-preview",
       contents: `Profile: ${JSON.stringify(profile)}\nTarget Role: ${targetRole}`,
       config: {
-        systemInstruction: "You are an AI Career Transformation Strategist. Rewrite this experience to align with the target role. Use strong action verbs, add data/impact language, and make it ATS-friendly. Focus on TRANSFERABLE SKILLS and AI-readiness. Return a complete profile including resume sections, cover letter, and LinkedIn optimization.",
+        systemInstruction: `You are an AI Career Transformation Strategist. Rewrite the user's resume and portfolio for the target role.
+        
+        For the 'projects' section, generate 2-3 portfolio projects tailored to the user's background that feel like REAL work experience.
+        Each project MUST include:
+        - title: Strong, professional title
+        - scenario: A real-world business problem or scenario
+        - tools: Specific AI and productivity tools used
+        - steps: 3-4 clear steps taken to complete the project
+        - finalOutput: The tangible result or deliverable
+        - resumeBullet: A pre-written, high-impact resume bullet (Action + Task + Result)
+        
+        Ensure the resume uses strong action verbs and data-driven impact language.`,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -410,10 +425,16 @@ export const aiService = {
                 type: Type.OBJECT,
                 properties: {
                   title: { type: Type.STRING },
-                  description: { type: Type.STRING }
+                  scenario: { type: Type.STRING },
+                  tools: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  steps: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  finalOutput: { type: Type.STRING },
+                  resumeBullet: { type: Type.STRING }
                 },
-                required: ["title", "description"]
-              }
+                required: ["title", "scenario", "tools", "steps", "finalOutput", "resumeBullet"]
+              },
+              minItems: 2,
+              maxItems: 3
             }
           },
           required: ["summary", "experience", "coverLetter", "linkedin", "projects"]
