@@ -139,11 +139,24 @@ export default function ResumePortfolio({ profile, targetRole, onNext, onBack }:
                             </div>
                             <span className="text-sm text-slate-400">{exp.period}</span>
                           </div>
-                          <ul className="list-disc list-outside ml-4 space-y-1">
+                          <div className="space-y-4">
                             {exp.bullets.map((bullet, j) => (
-                              <li key={j} className="text-sm">{bullet}</li>
+                              <div key={j} className="group/bullet">
+                                {bullet.before && (
+                                  <div className="flex items-start gap-2 text-[10px] text-slate-400 mb-1 opacity-60 group-hover/bullet:opacity-100 transition-opacity">
+                                    <span className="font-black uppercase tracking-widest">Before:</span>
+                                    <span className="italic line-through">{bullet.before}</span>
+                                  </div>
+                                )}
+                                <div className="flex items-start gap-3">
+                                  <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
+                                  <p className="text-sm text-slate-700 leading-relaxed">
+                                    {bullet.after}
+                                  </p>
+                                </div>
+                              </div>
                             ))}
-                          </ul>
+                          </div>
                         </div>
                       ))}
                     </div>

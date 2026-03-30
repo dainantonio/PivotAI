@@ -74,7 +74,10 @@ export interface ResumeRewriteResult {
     company: string;
     role: string;
     period: string;
-    bullets: string[];
+    bullets: {
+      before?: string;
+      after: string;
+    }[];
   }[];
   coverLetter: string;
   linkedin: {
@@ -380,7 +383,13 @@ export const aiService = {
       model: "gemini-3.1-pro-preview",
       contents: `Profile: ${JSON.stringify(profile)}\nTarget Role: ${targetRole}`,
       config: {
-        systemInstruction: `You are an AI Career Transformation Strategist. Rewrite the user's resume and portfolio for the target role.
+        systemInstruction: `You are an AI Career Transformation Strategist. Rewrite the user's professional experience into high-impact, AI-optimized resume bullets.
+        
+        Rules for bullets:
+        - Use strong action verbs.
+        - Include specific tools (e.g., ChatGPT, Claude, Excel, Python, specialized AI agents).
+        - Show clear outcomes (efficiency gains, automation, data-driven insights).
+        - For each bullet, provide a 'before' (the original or a simplified version) and an 'after' (the AI-optimized version).
         
         For the 'projects' section, generate 2-3 portfolio projects tailored to the user's background that feel like REAL work experience.
         Each project MUST include:
@@ -405,7 +414,17 @@ export const aiService = {
                   company: { type: Type.STRING },
                   role: { type: Type.STRING },
                   period: { type: Type.STRING },
-                  bullets: { type: Type.ARRAY, items: { type: Type.STRING } }
+                  bullets: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        before: { type: Type.STRING },
+                        after: { type: Type.STRING }
+                      },
+                      required: ["after"]
+                    }
+                  }
                 },
                 required: ["company", "role", "period", "bullets"]
               }
