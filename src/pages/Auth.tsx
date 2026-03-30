@@ -48,7 +48,7 @@ export default function Auth({ onLogin, onBack }: AuthProps) {
             <div className="bg-blue-600 p-2 rounded-xl group-hover:scale-110 transition-transform">
               <BrainCircuit className="w-8 h-8 text-white" />
             </div>
-            <span className="text-2xl font-black tracking-tight text-white">Career Bridge</span>
+            <span className="text-2xl font-black tracking-tight text-white">PIVOT</span>
           </div>
 
           <div className="flex-1 flex flex-col justify-center">
@@ -82,7 +82,7 @@ export default function Auth({ onLogin, onBack }: AuthProps) {
             >
               <Quote className="absolute -top-4 -left-4 w-10 h-10 text-blue-500/40" />
               <p className="text-white text-lg font-medium leading-relaxed mb-6 italic">
-                "Career Bridge didn't just show me the risk; it gave me the exact roadmap to transition. I went from a struggling copywriter to a lead Prompt Engineer in 4 months."
+                "PIVOT didn't just show me the risk; it gave me the exact roadmap to transition. I went from a struggling copywriter to a lead Prompt Engineer in 4 months."
               </p>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
@@ -97,7 +97,7 @@ export default function Auth({ onLogin, onBack }: AuthProps) {
           </div>
 
           <div className="mt-auto pt-12 text-slate-500 text-sm">
-            © 2026 AI Career Bridge. All rights reserved.
+            © 2026 PIVOT. All rights reserved.
           </div>
         </div>
       </div>

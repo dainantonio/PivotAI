@@ -38,7 +38,7 @@ export default function PortfolioBuilder({ careerData, onNext, onBack }: Portfol
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [enhancingId, setEnhancingId] = useState<string | null>(null);
   const [projects, setProjects] = useState<Project[]>(() => {
-    const saved = localStorage.getItem('pivotai_portfolio_projects');
+    const saved = localStorage.getItem('pivot_portfolio_projects');
     if (saved) return JSON.parse(saved);
     return [
       {
@@ -72,7 +72,7 @@ export default function PortfolioBuilder({ careerData, onNext, onBack }: Portfol
   });
 
   useEffect(() => {
-    localStorage.setItem('pivotai_portfolio_projects', JSON.stringify(projects));
+    localStorage.setItem('pivot_portfolio_projects', JSON.stringify(projects));
   }, [projects]);
 
   const [newProject, setNewProject] = useState({

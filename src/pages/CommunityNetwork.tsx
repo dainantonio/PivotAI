@@ -46,7 +46,7 @@ interface Post {
 export default function CommunityNetwork() {
   const [activeTab, setActiveTab] = useState<'mentors' | 'discussion' | 'events'>('mentors');
   const [posts, setPosts] = useState<Post[]>(() => {
-    const saved = localStorage.getItem('pivotai_community_posts');
+    const saved = localStorage.getItem('pivot_community_posts');
     if (saved) return JSON.parse(saved);
     return [
       {
@@ -75,7 +75,7 @@ export default function CommunityNetwork() {
   });
 
   useEffect(() => {
-    localStorage.setItem('pivotai_community_posts', JSON.stringify(posts));
+    localStorage.setItem('pivot_community_posts', JSON.stringify(posts));
   }, [posts]);
 
   const [newPostContent, setNewPostContent] = useState('');

@@ -37,7 +37,7 @@ interface DashboardProps {
   roleMatches: RoleMatch[];
   selectedRole: RoleMatch | null;
   setCareerData: (data: CareerPath | null) => void;
-  setView: (view: 'landing' | 'auth' | 'dashboard' | 'experience' | 'matching' | 'gap-analysis' | 'upskill' | 'resume-portfolio' | 'settings') => void;
+  setView: (view: 'landing' | 'auth' | 'dashboard' | 'experience' | 'matching' | 'gap-analysis' | 'upskill' | 'resume-portfolio' | 'upgrade-pack' | 'settings') => void;
 }
 
 export default function Dashboard({ careerData, userProfile, roleMatches, selectedRole, setCareerData, setView }: DashboardProps) {

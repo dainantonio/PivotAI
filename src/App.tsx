@@ -52,20 +52,20 @@ export default function App() {
   
   // AI Data States
   const [userProfile, setUserProfile] = useState<ParsedProfile | null>(() => {
-    const saved = localStorage.getItem('pivotai_user_profile');
+    const saved = localStorage.getItem('pivot_user_profile');
     return saved ? JSON.parse(saved) : null;
   });
   const [roleMatches, setRoleMatches] = useState<RoleMatch[]>(() => {
-    const saved = localStorage.getItem('pivotai_role_matches');
+    const saved = localStorage.getItem('pivot_role_matches');
     return saved ? JSON.parse(saved) : [];
   });
   const [selectedRole, setSelectedRole] = useState<RoleMatch | null>(() => {
-    const saved = localStorage.getItem('pivotai_selected_role');
+    const saved = localStorage.getItem('pivot_selected_role');
     return saved ? JSON.parse(saved) : null;
   });
 
   const [careerData, setCareerData] = useState<CareerPath | null>(() => {
-    const saved = localStorage.getItem('pivotai_career_data');
+    const saved = localStorage.getItem('pivot_career_data');
     return saved ? JSON.parse(saved) : null;
   });
 
@@ -73,13 +73,13 @@ export default function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (userProfile) localStorage.setItem('pivotai_user_profile', JSON.stringify(userProfile));
-    if (roleMatches.length > 0) localStorage.setItem('pivotai_role_matches', JSON.stringify(roleMatches));
-    if (selectedRole) localStorage.setItem('pivotai_selected_role', JSON.stringify(selectedRole));
+    if (userProfile) localStorage.setItem('pivot_user_profile', JSON.stringify(userProfile));
+    if (roleMatches.length > 0) localStorage.setItem('pivot_role_matches', JSON.stringify(roleMatches));
+    if (selectedRole) localStorage.setItem('pivot_selected_role', JSON.stringify(selectedRole));
     if (careerData) {
-      localStorage.setItem('pivotai_career_data', JSON.stringify(careerData));
+      localStorage.setItem('pivot_career_data', JSON.stringify(careerData));
     } else {
-      localStorage.removeItem('pivotai_career_data');
+      localStorage.removeItem('pivot_career_data');
     }
   }, [userProfile, roleMatches, selectedRole, careerData]);
 
@@ -221,7 +221,7 @@ export default function App() {
               <div className="bg-indigo-600 p-1.5 rounded-lg group-hover:rotate-12 transition-transform">
                 <BrainCircuit className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl font-bold tracking-tight text-slate-900">Career Bridge</span>
+              <span className="text-xl font-bold tracking-tight text-slate-900">PIVOT</span>
             </div>
 
             {/* Desktop Nav */}
@@ -529,7 +529,7 @@ export default function App() {
             Ready to transform your <br /> workforce?
           </h2>
           <p className="text-xl text-slate-600 mb-12 max-w-2xl mx-auto">
-            Join the world's most innovative companies using PivotAI to build resilient, high-performing teams.
+            Join the world's most innovative companies using PIVOT to build resilient, high-performing teams.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button 
@@ -554,7 +554,7 @@ export default function App() {
                 <div className="bg-indigo-600 p-1.5 rounded-lg">
                   <BrainCircuit className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-xl font-bold tracking-tight text-slate-900">PivotAI</span>
+                <span className="text-xl font-bold tracking-tight text-slate-900">PIVOT</span>
               </div>
               <p className="text-slate-500 leading-relaxed mb-8 max-w-xs">
                 The Operating System for Workforce Intelligence. Building the infrastructure for the future of work.
@@ -615,7 +615,7 @@ export default function App() {
 
           <div className="pt-10 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-slate-400">
-              © 2026 PivotAI Technologies Inc. All rights reserved.
+              © 2026 PIVOT Technologies Inc. All rights reserved.
             </p>
             <div className="flex items-center gap-6 text-sm text-slate-400">
               <a href="#" className="hover:text-slate-600 transition-colors">Cookie Policy</a>

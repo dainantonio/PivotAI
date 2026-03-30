@@ -119,7 +119,7 @@ export default function Settings() {
             >
               <div>
                 <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-1">Public Profile</h2>
-                <p className="text-slate-500">Manage your public presence and how others see you on PivotAI.</p>
+                <p className="text-slate-500">Manage your public presence and how others see you on PIVOT.</p>
               </div>
 
               <div className="flex flex-col md:flex-row items-start gap-8">
@@ -383,7 +383,7 @@ export default function Settings() {
             >
               <div>
                 <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-1">API Usage</h2>
-                <p className="text-slate-500">Manage your API keys for integrating PivotAI into your workflows.</p>
+                <p className="text-slate-500">Manage your API keys for integrating PIVOT into your workflows.</p>
               </div>
 
               <div className="space-y-6">

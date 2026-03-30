@@ -30,7 +30,7 @@ interface InterviewSimulatorProps {
 
 export default function InterviewSimulator({ careerData, setView }: InterviewSimulatorProps) {
   const [messages, setMessages] = useState<Message[]>(() => {
-    const saved = localStorage.getItem('pivotai_interview_messages');
+    const saved = localStorage.getItem('pivot_interview_messages');
     if (saved) return JSON.parse(saved);
     return [
       {
@@ -42,7 +42,7 @@ export default function InterviewSimulator({ careerData, setView }: InterviewSim
   });
 
   useEffect(() => {
-    localStorage.setItem('pivotai_interview_messages', JSON.stringify(messages));
+    localStorage.setItem('pivot_interview_messages', JSON.stringify(messages));
   }, [messages]);
   const [input, setInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -186,7 +186,7 @@ export default function InterviewSimulator({ careerData, setView }: InterviewSim
                     content: `Hello Alex! I'm Coach Atlas. Today we're conducting a technical interview for the ${careerData?.recommendedPivot || 'AI Prompt Engineer'} position. To start, can you explain how you would optimize a prompt to reduce hallucinations in a RAG-based system?`
                   }];
                   setMessages(initialMessages);
-                  localStorage.setItem('pivotai_interview_messages', JSON.stringify(initialMessages));
+                  localStorage.setItem('pivot_interview_messages', JSON.stringify(initialMessages));
                 }}
                 className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-white transition-colors"
               >

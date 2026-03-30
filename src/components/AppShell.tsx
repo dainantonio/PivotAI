@@ -89,7 +89,7 @@ export default function AppShell({ children, currentView, setView }: AppShellPro
             <div className="bg-blue-600 p-1.5 rounded-lg">
               <BrainCircuit className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold tracking-tight text-white">Career Bridge</span>
+            <span className="text-xl font-bold tracking-tight text-white">PIVOT</span>
           </div>
 
           {/* Navigation */}
