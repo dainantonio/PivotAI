@@ -158,7 +158,16 @@ export async function generateProjectDescription(title: string, rawNotes: string
     model: "gemini-3-flash-preview",
     contents: `Project Title: ${title}\nRaw Notes: ${rawNotes}\nTarget Role: ${targetRole}`,
     config: {
-      systemInstruction: "You are a Technical Writer. Rewrite the provided raw project notes into a high-impact, professional description for a portfolio. Focus on the 'Action-Result' framework and highlight transferable skills relevant to the target role. Keep it under 3 sentences.",
+      systemInstruction: `You are a Senior Technical Writer and Career Strategist. 
+      Rewrite the provided raw project notes into a high-impact, professional description for a portfolio. 
+      
+      CRITICAL GUIDELINES:
+      1. Use the 'Action-Result' framework (Situation/Task, Action, Result).
+      2. Highlight transferable skills specifically relevant to the ${targetRole} role (e.g., for AI Product Strategist, focus on product-market fit, AI feasibility, stakeholder management, and data-driven decision making).
+      3. Start with a strong action verb.
+      4. Quantify results where possible (even if you have to infer a realistic metric based on the notes).
+      5. Keep it concise: exactly 2-3 high-impact sentences.
+      6. Avoid jargon unless it's specific to AI/Product management.`,
     }
   });
 

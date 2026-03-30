@@ -123,7 +123,7 @@ export default function App() {
         {view === 'matching' && <RoleMatching onNext={handleNextStep} onBack={handlePrevStep} />}
         {view === 'gap-analysis' && <GapAnalysis onNext={handleNextStep} onBack={handlePrevStep} />}
         {view === 'upskill' && <UpskillPlan onNext={handleNextStep} onBack={handlePrevStep} />}
-        {view === 'resume-portfolio' && <ResumePortfolio onNext={handleNextStep} onBack={handlePrevStep} />}
+        {view === 'resume-portfolio' && <PortfolioBuilder careerData={careerData} onNext={handleNextStep} onBack={handlePrevStep} />}
         {view === 'settings' && <Settings />}
       </AppShell>
     );

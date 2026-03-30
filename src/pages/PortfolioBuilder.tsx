@@ -11,7 +11,8 @@ import {
   MoreHorizontal,
   X,
   Upload,
-  Sparkles
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { generateProjectDescription, CareerPath } from '../services/geminiService';
@@ -28,11 +29,14 @@ interface Project {
 
 interface PortfolioBuilderProps {
   careerData: CareerPath | null;
+  onNext?: () => void;
+  onBack?: () => void;
 }
 
-export default function PortfolioBuilder({ careerData }: PortfolioBuilderProps) {
+export default function PortfolioBuilder({ careerData, onNext, onBack }: PortfolioBuilderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const [enhancingId, setEnhancingId] = useState<string | null>(null);
   const [projects, setProjects] = useState<Project[]>(() => {
     const saved = localStorage.getItem('pivotai_portfolio_projects');
     if (saved) return JSON.parse(saved);
@@ -107,6 +111,22 @@ export default function PortfolioBuilder({ careerData }: PortfolioBuilderProps) 
       console.error('Failed to enhance description:', error);
     } finally {
       setIsEnhancing(false);
+    }
+  };
+
+  const handleEnhanceExisting = async (project: Project) => {
+    setEnhancingId(project.id);
+    try {
+      const enhanced = await generateProjectDescription(
+        project.title,
+        project.description,
+        careerData?.recommendedPivot || 'AI Product Strategist'
+      );
+      setProjects(prev => prev.map(p => p.id === project.id ? { ...p, description: enhanced } : p));
+    } catch (error) {
+      console.error('Failed to enhance existing project:', error);
+    } finally {
+      setEnhancingId(null);
     }
   };
 
@@ -340,6 +360,17 @@ export default function PortfolioBuilder({ careerData }: PortfolioBuilderProps) 
                 {project.description}
               </p>
 
+              <div className="mb-6">
+                <button 
+                  onClick={() => handleEnhanceExisting(project)}
+                  disabled={enhancingId === project.id}
+                  className="flex items-center gap-2 text-[10px] font-black text-blue-600 uppercase tracking-widest hover:text-blue-700 transition-colors disabled:opacity-50"
+                >
+                  <Sparkles className={`w-3 h-3 ${enhancingId === project.id ? 'animate-spin' : ''}`} />
+                  {enhancingId === project.id ? 'Enhancing...' : 'Enhance with AI'}
+                </button>
+              </div>
+
               <div className="space-y-6">
                 <div className="flex flex-wrap gap-2">
                   {project.techStack.map(tech => (
@@ -389,6 +420,29 @@ export default function PortfolioBuilder({ careerData }: PortfolioBuilderProps) 
           <p className="text-sm text-slate-500 max-w-[200px]">Start a new project from your curriculum templates.</p>
         </motion.button>
       </div>
+
+      {/* Navigation Buttons */}
+      {(onNext || onBack) && (
+        <div className="flex items-center justify-center gap-6 pt-12 border-t border-slate-100">
+          {onBack && (
+            <button 
+              onClick={onBack}
+              className="text-slate-400 font-bold hover:text-slate-600 transition-colors px-6 py-4"
+            >
+              Back
+            </button>
+          )}
+          {onNext && (
+            <button 
+              onClick={onNext}
+              className="bg-slate-900 text-white px-10 py-5 rounded-3xl font-bold text-lg flex items-center gap-3 hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 hover:-translate-y-1 active:scale-95 group"
+            >
+              Continue to Dashboard
+              <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
